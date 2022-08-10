@@ -1,0 +1,137 @@
+---
+title: "JA2_Preprocessing"
+author: "T.L"
+date: "2022-08-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+# Packages
+
+```{r Packages}
+
+
+
+library(qualtRics) # Load in data straight from Qualtrics
+
+library(tidyverse) # To tiday up data
+
+library(janitor) # To clean up names in data
+
+library(dlookr) # To use the diagnostics on numeric variables
+
+```
+
+# Load in data
+
+```{r Load in data}
+
+#loading qualtrics API key first
+qualtrics_api_credentials(api_key = "9nTtJm5yoaHANTmSRdCfVTA3nJFoeomJa1byTFxy",
+                           base_url = "utsau.au1.qualtrics.com",
+                           overwrite = TRUE,
+                           install = TRUE)
+
+readRenviron("~/.Renviron")
+
+#loading in a datafile
+#you can find the survey ID at the end of the qualtrics link - it starts with SV
+rawdf <- fetch_survey(surveyID = "SV_3KHXpXtwYchFAua", force_request = TRUE, label = FALSE, convert = FALSE) 
+
+
+#once you've loaded in all your datafiles this way, I suggest saving them into your file so you have the "raw" versions saved as a back-up
+#otherwise they're only on qualtrics
+#to do this, you'd follow this code for each of your datafiles
+write.csv(rawdf, "JA_2_Raw_Qualtrics.csv", row.names = FALSE)
+
+
+```
+
+# Load in the completes datafile
+
+```{r Tidy the data file}
+
+completedf <- read.csv("JA_2022_August.csv")
+
+tidydf <- clean_names(completedf) 
+
+## Select columns to keep
+
+tidydf2 <- select(tidydf, ID = response_id, GENDER = q2, AGE = q3, MARITAL_STAT = q4, EDU = q5,
+                  CURRENT_HEALTH = q6, CURRENT_MENTAL_ILLNESS = q9, MENTAL_ILLNESS = q10, ATTN_1 = a1,
+                  DASS3 = dass3, DASS5 = dass5, DASS10 = dass10, DASS13 = dass13, DASS16 = dass16,
+                  DASS17 = dass17, DASS21 = dass21, ATTN_2 = q224, TIME_P1_1 = time_p1_1_page_submit, PRAC1_1 = prac1_1,
+                  TIME_P1_2 = time_p1_2_page_submit, PRAC1_2 = prac1_2, TIME_P1_3 = time_p1_3_page_submit, PRAC1_3 = prac1_3,
+                  TIME_P2_1 = time_p2_1_page_submit, PRAC2_1 = prac2_1, TIME_P2_2 = time_p2_2_page_submit, PRAC2_2 = prac2_2,
+                  TIME_P2_3 = time_p2_3_page_submit, PRAC2_3 = prac2_3, TIME_ET1_1 = time_et1_1_page_submit, ESTTASK1_1 = est_task1_1,
+                  TIME_ET1_2 = time_et1_2_page_submit, ESTTASK1_2 = est_task1_2, TIME_ET1_3 = time_et1_3_page_submit, ESTTASK1_3 = est_task1_3,
+                  TIME_ET1_4 = time_et1_4_page_submit, ESTTASK1_4 = est_task1_4, TIME_ET1_5 = time_et1_5_page_submit, ESTTASK1_5 = est_task1_5,
+                  TIME_ET1_6 = time_et1_6_page_submit, ESTTASK1_6 = est_task1_6, TIME_ET1_7 = time_et1_7_page_submit, ESTTASK1_7 = est_task1_7,
+                  TIME_ET1_8 = time_et1_8_page_submit, ESTTASK1_8 = est_task1_8, TIME_ET1_9 = time_et1_9_page_submit, ESTTASK1_9 = est_task1_9,
+                  TIME_ET1_10 = time_et1_10_page_submit, ESTTASK1_10 = est_task1_10, TIME_ET1_11 = time_et1_11_page_submit, ESTTASK1_11 = est_task1_11,
+                  TIME_ET1_12 = time_et1_12_page_submit, ESTTASK1_12 = est_task1_12, PRE_CONFIDENCE = est_task1_outro_1, EMO_REG = q218,
+                  EMO_REG_EFFORT1 = q220_1, EMO_REG_EFFORT2 = q221_1, TIME_ET2_1 = time_et2_1_page_submit, ESTTASK2_1 = est_task2_1,
+                  TIME_ET2_2 = time_et2_2_page_submit, ESTTASK2_2 = est_task2_2, TIME_ET2_3 = time_et2_3_page_submit, ESTTASK2_3 = est_task2_3,
+                  TIME_ET2_4 = time_et2_4_page_submit, ESTTASK2_4 = est_task2_4, TIME_ET2_5 = time_et2_5_page_submit, ESTTASK2_5 = est_task2_5,
+                  TIME_ET2_6 = time_et2_6_page_submit, ESTTASK2_6 = est_task2_6, TIME_ET2_7 = time_et2_7_page_submit, ESTTASK2_7 = est_task2_7,
+                  TIME_ET2_8 = time_et2_8_page_submit, ESTTASK2_8 = est_task2_8, TIME_ET2_9 = time_et2_9_page_submit, ESTTASK2_9 = est_task2_9,
+                  TIME_ET2_10 = time_et2_10_page_submit, ESTTASK2_10 = est_task2_10, TIME_ET2_11 = time_et2_11_page_submit, ESTTASK2_11 = est_task2_11,
+                  TIME_ET2_12 = time_et2_12_page_submit, ESTTASK2_12 = est_task2_12, POST_CONFIDENCE = est_task2_outro_1, PERCEIVED_ADVICE_ACCURACY = est_task2_outro_2,
+                  ls_7:ls_16, ns_9:ns_23, prac2_1_advice:est2_12_advice)
+
+## Delete first 2 rows of data
+
+tidydf2 <-tidydf2[-c(1:2) , ]
+
+sapply(tidydf2, class)
+
+## Convert character columns to numeric
+
+tidydf3 <- select(tidydf2, DASS3:PRE_CONFIDENCE, EMO_REG_EFFORT1:est2_12_advice, AGE, EDU, CURRENT_HEALTH) #create a new dataset with the columns you want to convert, use : to specify "from column x to column y"
+tidydf3 <- lapply(tidydf3, function(x) as.numeric(as.character(x)))
+tidydf3=data.frame(tidydf3)
+names(tidydf3)=paste(names(tidydf3),"n",sep = "") #rename the variables by adding an n to their name to differentiate them
+tidydf4=cbind(tidydf3,tidydf2) #merge the 2 datasets into a new d4
+
+## Check which columns have NAs
+
+colSums(is.na(tidydf4))
+
+## Check numeric variables
+
+diagnose_df <- diagnose_numeric(tidydf4) # A couple over very very small estimates...
+
+## Remove the participants with potentially neuro mental health conditions
+
+tidydf5 <- tidydf4[-c(15, 17, 33, 44, 46, 54, 75, 89)]
+
+
+
+```
+
+
+
