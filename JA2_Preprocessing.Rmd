@@ -38,7 +38,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 library(qualtRics) # Load in data straight from Qualtrics
 
-library(tidyverse) # To tiday up data
+library(tidyverse) # To tidy up data
 
 library(janitor) # To clean up names in data
 
@@ -77,6 +77,8 @@ write.csv(rawdf, "JA_2_Raw_Qualtrics.csv", row.names = FALSE)
 
 completedf <- read.csv("JA_2022_August.csv")
 
+sapply(completedf, class)
+
 tidydf <- clean_names(completedf) 
 
 ## Select columns to keep
@@ -109,13 +111,61 @@ tidydf2 <-tidydf2[-c(1:2) , ]
 
 sapply(tidydf2, class)
 
-## Convert character columns to numeric
+## Convert character timing variables to numeric 
 
-tidydf3 <- select(tidydf2, DASS3:PRE_CONFIDENCE, EMO_REG_EFFORT1:est2_12_advice, AGE, EDU, CURRENT_HEALTH) #create a new dataset with the columns you want to convert, use : to specify "from column x to column y"
-tidydf3 <- lapply(tidydf3, function(x) as.numeric(as.character(x)))
+tidydf2$TIME_P1_1 <-  as.numeric(as.character(tidydf2$TIME_P1_1))
+tidydf2$TIME_P1_2 <- as.numeric(as.character(tidydf2$TIME_P1_2))
+tidydf2$TIME_P1_3 <- as.numeric(as.character(tidydf2$TIME_P1_3))
+tidydf2$TIME_P2_1 <- as.numeric(as.character(tidydf2$TIME_P2_1))
+tidydf2$TIME_P2_2 <- as.numeric(as.character(tidydf2$TIME_P2_2))
+tidydf2$TIME_P2_3 <- as.numeric(as.character(tidydf2$TIME_P2_3))
+tidydf2$TIME_ET1_1 <- as.numeric(as.character(tidydf2$TIME_ET1_1))
+tidydf2$TIME_ET1_2 <- as.numeric(as.character(tidydf2$TIME_ET1_2))
+tidydf2$TIME_ET1_3 <- as.numeric(as.character(tidydf2$TIME_ET1_3))
+tidydf2$TIME_ET1_4 <- as.numeric(as.character(tidydf2$TIME_ET1_4))
+tidydf2$TIME_ET1_5 <- as.numeric(as.character(tidydf2$TIME_ET1_5))
+tidydf2$TIME_ET1_6 <- as.numeric(as.character(tidydf2$TIME_ET1_6))
+tidydf2$TIME_ET1_7 <- as.numeric(as.character(tidydf2$TIME_ET1_7))
+tidydf2$TIME_ET1_8 <- as.numeric(as.character(tidydf2$TIME_ET1_8))
+tidydf2$TIME_ET1_9 <- as.numeric(as.character(tidydf2$TIME_ET1_9))
+tidydf2$TIME_ET1_10 <- as.numeric(as.character(tidydf2$TIME_ET1_10))
+tidydf2$TIME_ET1_11 <- as.numeric(as.character(tidydf2$TIME_ET1_11))
+tidydf2$TIME_ET1_12 <- as.numeric(as.character(tidydf2$TIME_ET1_12))
+tidydf2$TIME_ET2_1 <- as.numeric(as.character(tidydf2$TIME_ET2_1))
+tidydf2$TIME_ET2_2 <- as.numeric(as.character(tidydf2$TIME_ET2_2))
+tidydf2$TIME_ET2_3 <- as.numeric(as.character(tidydf2$TIME_ET2_3))
+tidydf2$TIME_ET2_4 <- as.numeric(as.character(tidydf2$TIME_ET2_4))
+tidydf2$TIME_ET2_5 <- as.numeric(as.character(tidydf2$TIME_ET2_5))
+tidydf2$TIME_ET2_6 <- as.numeric(as.character(tidydf2$TIME_ET2_6))
+tidydf2$TIME_ET2_7 <- as.numeric(as.character(tidydf2$TIME_ET2_7))
+tidydf2$TIME_ET2_8 <- as.numeric(as.character(tidydf2$TIME_ET2_8))
+tidydf2$TIME_ET2_9 <- as.numeric(as.character(tidydf2$TIME_ET2_9))
+tidydf2$TIME_ET2_10 <- as.numeric(as.character(tidydf2$TIME_ET2_10))
+tidydf2$TIME_ET2_11 <- as.numeric(as.character(tidydf2$TIME_ET2_11))
+tidydf2$TIME_ET2_12 <- as.numeric(as.character(tidydf2$TIME_ET2_12))
+
+timingdf <- data.frame(tidydf2$TIME_P1_1, tidydf2$TIME_P1_2, tidydf2$TIME_P1_3, tidydf2$TIME_P2_1, tidydf2$TIME_P2_2, tidydf2$TIME_P2_3,
+                    tidydf2$TIME_ET1_1, tidydf2$TIME_ET1_2, tidydf2$TIME_ET1_3, tidydf2$TIME_ET1_4, tidydf2$TIME_ET1_5,
+                    tidydf2$TIME_ET1_6, tidydf2$TIME_ET1_7, tidydf2$TIME_ET1_8, tidydf2$TIME_ET1_9, tidydf2$TIME_ET1_10,
+                    tidydf2$TIME_ET1_11, tidydf2$TIME_ET1_12, tidydf2$TIME_ET2_1, tidydf2$TIME_ET2_2, tidydf2$TIME_ET2_3,
+                    tidydf2$TIME_ET2_4, tidydf2$TIME_ET2_5, tidydf2$TIME_ET2_6, tidydf2$TIME_ET2_7, tidydf2$TIME_ET2_8,
+                    tidydf2$TIME_ET2_9, tidydf2$TIME_ET2_10, tidydf2$TIME_ET2_11, tidydf2$TIME_ET2_12)
+
+
+write.csv(timingdf, "JA_2_Timing_Variables.csv", row.names = FALSE) # Save the timing data to separate file
+
+
+## Attempt to convert multiple columns at once 
+
+tidydf3 <- select(tidydf2, AGE:CURRENT_HEALTH, ATTN_1:est2_12_advice) #create a new dataset with the columns you want to convert, use : to specify "from column x to column y"
+tidydf3 <- lapply(tidydf3, function(x) as.integer(as.character(x)))
 tidydf3=data.frame(tidydf3)
 names(tidydf3)=paste(names(tidydf3),"n",sep = "") #rename the variables by adding an n to their name to differentiate them
 tidydf4=cbind(tidydf3,tidydf2) #merge the 2 datasets into a new d4
+
+## Bring ID to the first column position
+
+tidydf4 <- tidydf4 %>% relocate(ID)
 
 ## Check which columns have NAs
 
@@ -125,10 +175,47 @@ colSums(is.na(tidydf4))
 
 diagnose_df <- diagnose_numeric(tidydf4) # A couple over very very small estimates...
 
+## Noticed there is one person who has specified their education as 118 years
+## Assuming extra 1 was a typo and changing to 18 years
+
+tidydf4["117", "EDUn"] <- 18 ## df["rowname", "columnname"] <- value
+
 ## Remove the participants with potentially neuro mental health conditions
 
-tidydf5 <- tidydf4[-c(15, 17, 33, 44, 46, 54, 75, 89)]
+tidydf5 <- tidydf4[!(row.names(tidydf4) %in% c('15','17', '33', '44', '46', '54', '61', '75', '76', '89')), ]
 
+structure(tidydf5)
+
+## Remove trials where first estimate matches the advice
+
+## Try on practice trials first ##
+
+### Need to ensure that as.integer(NA) is specified! Otherwise, get errors about compatibility of vectors.
+
+df6 <- tidydf5 %>% 
+  rowwise(PRAC1_1n) %>% mutate(PRAC1_1n = ifelse(PRAC1_1n == prac2_1_advicen, as.integer(NA),PRAC1_1n))
+  
+df6 <- df6 %>%   
+  rowwise(PRAC1_2n) %>% mutate(PRAC1_2n = ifelse(PRAC1_2n == prac2_2_advicen, as.integer(NA),PRAC1_2n))
+
+df6 <- df6 %>% 
+  rowwise(PRAC1_3n) %>% mutate(PRAC1_3n = ifelse(PRAC1_3n == prac2_3_advicen,as.integer(NA),PRAC1_3n)) 
+
+# None came up
+
+## Try removing actual trials...
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_1n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_1n)) # None
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_2n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK1_2n)) # None
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_3n) %>% mutate(ESTTASK1_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK1_3n)) # One!
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_4n) %>% mutate(ESTTASK1_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK1_4n))
 
 
 ```
