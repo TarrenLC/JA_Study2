@@ -206,19 +206,136 @@ df6 <- df6 %>%
 ## Try removing actual trials...
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_1n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_1n)) # None
+  rowwise(ESTTASK1_1n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_1n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_2n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK1_2n)) # None
+  rowwise(ESTTASK1_2n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK1_2n)) 
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_3n) %>% mutate(ESTTASK1_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK1_3n)) # One!
+  rowwise(ESTTASK1_3n) %>% mutate(ESTTASK1_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK1_3n)) 
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_4n) %>% mutate(ESTTASK1_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK1_4n))
+  rowwise(ESTTASK1_4n) %>% mutate(ESTTASK1_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK1_4n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_5n) %>% mutate(ESTTASK1_5n = ifelse(ESTTASK1_5n == est2_5_advicen,as.integer(NA),ESTTASK1_5n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_6n) %>% mutate(ESTTASK1_6n = ifelse(ESTTASK1_6n == est2_6_advicen,as.integer(NA),ESTTASK1_6n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_7n) %>% mutate(ESTTASK1_7n = ifelse(ESTTASK1_7n == est2_7_advicen,as.integer(NA),ESTTASK1_7n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_8n) %>% mutate(ESTTASK1_8n = ifelse(ESTTASK1_8n == est2_8_advicen,as.integer(NA),ESTTASK1_8n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_9n) %>% mutate(ESTTASK1_9n = ifelse(ESTTASK1_9n == est2_9_advicen,as.integer(NA),ESTTASK1_9n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_10n) %>% mutate(ESTTASK1_10n = ifelse(ESTTASK1_10n == est2_10_advicen,as.integer(NA),ESTTASK1_10n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_11n) %>% mutate(ESTTASK1_11n = ifelse(ESTTASK1_11n == est2_11_advicen,as.integer(NA),ESTTASK1_11n)) 
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_12n) %>% mutate(ESTTASK1_12n = ifelse(ESTTASK1_12n == est2_12_advicen,as.integer(NA),ESTTASK1_12n)) 
+
+
+### Add column with age group
+
+df6$AGEGROUP <- dplyr::case_when (df6$AGEn <= 39 ~ 'YOUNG',
+                                df6$AGEn <= 64 ~ 'MIDDLE',
+                                df6$AGEn >= 65 ~ 'OLDER')
+
+
+### Number of NAs for each age group
+
+nacount1 <- df6 %>%
+  group_by(AGEGROUP) %>%  # replace to your needs
+  summarise_all(funs(sum(is.na(.))))
+  
+
+```
+
+
+# Create WoAs for each jar ###########################
+```{r}
+
+## Make WOA values for each jar for each person.
+
+df6$PRAC01_WOA <- (df6$PRAC2_1n-df6$PRAC1_1n)/(df6$prac2_1_advicen-df6$PRAC1_1n)
+
+df6$PRAC02_WOA <- (df6$PRAC2_2n-df6$PRAC1_2n)/(df6$prac2_2_advicen-df6$PRAC1_2n)
+
+df6$PRAC03_WOA <- (df6$PRAC2_3n-df6$PRAC1_3n)/(df6$prac2_3_advicen-df6$PRAC1_3n)
+
+df6$JAR01_WOA <- (df6$ESTTASK2_1n-df6$ESTTASK1_1n)/(df6$est2_1_advicen-df6$ESTTASK1_1n)
+
+df6$JAR02_WOA <- (df6$ESTTASK2_2n-df6$ESTTASK1_2n)/(df6$est2_2_advicen-df6$ESTTASK1_2n)
+
+df6$JAR03_WOA <- (df6$ESTTASK2_3n-df6$ESTTASK1_3n)/(df6$est2_3_advicen-df6$ESTTASK1_3n)
+
+df6$JAR04_WOA <- (df6$ESTTASK2_4n-df6$ESTTASK1_4n)/(df6$est2_4_advicen-df6$ESTTASK1_4n)
+
+df6$JAR05_WOA <- (df6$ESTTASK2_5n-df6$ESTTASK1_5n)/(df6$est2_5_advicen-df6$ESTTASK1_5n)
+
+df6$JAR06_WOA <- (df6$ESTTASK2_6n-df6$ESTTASK1_6n)/(df6$est2_6_advicen-df6$ESTTASK1_6n)
+
+df6$JAR07_WOA <- (df6$ESTTASK2_7n-df6$ESTTASK1_7n)/(df6$est2_7_advicen-df6$ESTTASK1_7n)
+
+df6$JAR08_WOA <- (df6$ESTTASK2_8n-df6$ESTTASK1_8n)/(df6$est2_8_advicen-df6$ESTTASK1_8n)
+
+df6$JAR09_WOA <- (df6$ESTTASK2_9n-df6$ESTTASK1_9n)/(df6$est2_9_advicen-df6$ESTTASK1_9n)
+
+df6$JAR10_WOA <- (df6$ESTTASK2_10n-df6$ESTTASK1_10n)/(df6$est2_10_advicen-df6$ESTTASK1_10n)
+
+df6$JAR11_WOA <- (df6$ESTTASK2_11n-df6$ESTTASK1_11n)/(df6$est2_11_advicen-df6$ESTTASK1_11n)
+
+df6$JAR12_WOA <- (df6$ESTTASK2_12n-df6$ESTTASK1_12n)/(df6$est2_12_advicen-df6$ESTTASK1_12n)
 
 
 ```
 
+
+# Create depression symptom severity scores
+```{r}
+
+df7 <- df6 %>%
+  rowwise() %>%
+  mutate(DASS = sum(c(DASS3n, DASS5n, DASS10n, DASS13n, DASS16n, DASS17n, DASS21n), na.rm=T))
+
+### Add depressive symptom category
+
+df7$DASS_SEVERITY<- dplyr::case_when (df7$DASS <= 4 ~ 'NORMAL',
+                                df7$DASS <= 6 ~ 'MILD',
+                                df7$DASS <= 10 ~ 'MODERATE',
+                                df7$DASS <= 13 ~ 'SEVERE',
+                                df7$DASS >= 14 ~ 'EXTREMELY_SEVERE')
+
+df7$AGEGROUP <- factor(df7$AGEGROUP, levels = c("YOUNG", "MIDDLE", "OLDER"))
+
+df7$DASS_SEVERITY <- factor(df7$DASS_SEVERITY, levels = c("NORMAL", "MILD", "MODERATE", "SEVERE", "ESTREMELY_SEVERE"))
+
+my_summary <- df7 %>%
+  count(DASS_SEVERITY, AGEGROUP, sort = TRUE) 
+
+```
+
+
+# Sum together fluid IQ and number scores
+```{r}
+
+df7 <- df7 %>% 
+  rowwise() %>%
+  mutate(FLUIDIQ = sum(c(ls_7n, ls_8n, ls_9n, ls_10n, ls_11n, ls_12n, ls_13n, ls_14n,
+                         ls_15n, ls_16n), na.rm=T))
+
+df7 <- df7 %>% 
+  rowwise() %>% 
+  mutate(NUMIQ = sum(c(ns_9n, ns_10n, ns_11n, ns_12n, ns_13n, ns_14n, ns_15n, ns_16n,
+                       ns_17n, ns_18n, ns_19n, ns_20n, ns_21n, ns_22n, ns_23n), na.rm=T))
+
+```
 
 
