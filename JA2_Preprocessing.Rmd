@@ -44,6 +44,8 @@ library(janitor) # To clean up names in data
 
 library(dlookr) # To use the diagnostics on numeric variables
 
+library(rstatix) # For get_summary_stats functions and basic analyses like ANOVA etc
+
 ```
 
 # Load in data
@@ -335,6 +337,93 @@ df7 <- df7 %>%
   rowwise() %>% 
   mutate(NUMIQ = sum(c(ns_9n, ns_10n, ns_11n, ns_12n, ns_13n, ns_14n, ns_15n, ns_16n,
                        ns_17n, ns_18n, ns_19n, ns_20n, ns_21n, ns_22n, ns_23n), na.rm=T))
+
+```
+
+
+# Remove WOA values smaller than -1.3 or larger than 1.3
+```{r}
+
+## Remove from practice trials
+
+df7 <- df7 %>% 
+  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(PRAC01_WOA > 1.3|PRAC01_WOA < -1.3, as.integer(NA),PRAC01_WOA))
+  
+df7 <- df7 %>% 
+  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(PRAC02_WOA > 1.3|PRAC02_WOA < -1.3, as.integer(NA),PRAC02_WOA))
+
+df7 <- df7 %>% 
+  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(PRAC03_WOA > 1.3|PRAC03_WOA < -1.3, as.integer(NA),PRAC03_WOA))
+
+
+## Actual trials
+
+df7 <- df7 %>% 
+  rowwise(JAR01_WOA) %>% mutate(JAR01_WOA = ifelse(JAR01_WOA > 1.3|JAR01_WOA < -1.3, as.integer(NA),JAR01_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR02_WOA) %>% mutate(JAR02_WOA = ifelse(JAR02_WOA > 1.3|JAR02_WOA < -1.3, as.integer(NA),JAR02_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR03_WOA) %>% mutate(JAR03_WOA = ifelse(JAR03_WOA > 1.3|JAR03_WOA < -1.3, as.integer(NA),JAR03_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR04_WOA) %>% mutate(JAR04_WOA = ifelse(JAR04_WOA > 1.3|JAR04_WOA < -1.3, as.integer(NA),JAR04_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR05_WOA) %>% mutate(JAR05_WOA = ifelse(JAR05_WOA > 1.3|JAR05_WOA < -1.3, as.integer(NA),JAR05_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR06_WOA) %>% mutate(JAR06_WOA = ifelse(JAR06_WOA > 1.3|JAR06_WOA < -1.3, as.integer(NA),JAR06_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR07_WOA) %>% mutate(JAR07_WOA = ifelse(JAR07_WOA > 1.3|JAR07_WOA < -1.3, as.integer(NA),JAR07_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR08_WOA) %>% mutate(JAR08_WOA = ifelse(JAR08_WOA > 1.3|JAR08_WOA < -1.3, as.integer(NA),JAR08_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR09_WOA) %>% mutate(JAR09_WOA = ifelse(JAR09_WOA > 1.3|JAR09_WOA < -1.3, as.integer(NA),JAR09_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR10_WOA) %>% mutate(JAR10_WOA = ifelse(JAR10_WOA > 1.3|JAR10_WOA < -1.3, as.integer(NA),JAR10_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR11_WOA) %>% mutate(JAR11_WOA = ifelse(JAR11_WOA > 1.3|JAR11_WOA < -1.3, as.integer(NA),JAR11_WOA))
+
+df7 <- df7 %>% 
+  rowwise(JAR12_WOA) %>% mutate(JAR12_WOA = ifelse(JAR12_WOA > 1.3|JAR12_WOA < -1.3, as.integer(NA),JAR12_WOA))
+
+## Get NA counts
+
+### Number of NAs for each age group
+
+nacount2 <- df7 %>%
+  group_by(AGEGROUP) %>%  # replace to your needs
+  summarise_all(funs(sum(is.na(.))))
+
+```
+
+
+# Get M and SD for each age groups WOA values
+```{r}
+
+summarystats_jars <- df7 %>% 
+  group_by(AGEGROUP) %>%
+  get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
+
+
+outlierfun <- function(x, a, b){
+  if(x > a+(3*b)) print("GREATER") 
+     else if (x < a-(3*b)) print ("LOWER")
+           else print (x)
+    }
+  
+
+
+outliers_young <- df7 %>% 
+  filter(AGEGROUP == "YOUNG")
+
 
 ```
 
