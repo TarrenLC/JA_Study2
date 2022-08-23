@@ -338,6 +338,12 @@ df7 <- df7 %>%
   mutate(NUMIQ = sum(c(ns_9n, ns_10n, ns_11n, ns_12n, ns_13n, ns_14n, ns_15n, ns_16n,
                        ns_17n, ns_18n, ns_19n, ns_20n, ns_21n, ns_22n, ns_23n), na.rm=T))
 
+## Create average score for fluid IQ
+
+df7 <- df7 %>% 
+  rowwise() %>% 
+  mutate(AVFLUIDIQ = mean(c(FLUIDIQ, NUMIQ)))
+
 ```
 
 
@@ -414,8 +420,8 @@ summarystats_jars <- df7 %>%
 
 
 outlierfun <- function(x, a, b){
-  if(x > a+(3*b)) print("GREATER") 
-     else if (x < a-(3*b)) print ("LOWER")
+  if(x > a+(3*b)) print(5) 
+     else if (x < a-(3*b)) print (-5)
            else print (x)
     }
   
@@ -424,6 +430,7 @@ outlierfun <- function(x, a, b){
 outliers_young <- df7 %>% 
   filter(AGEGROUP == "YOUNG")
 
+outlierfun(outliers_young$PRAC01_WOA, 0.840, 0.307)
 
 ```
 
