@@ -418,19 +418,97 @@ summarystats_jars <- df7 %>%
   group_by(AGEGROUP) %>%
   get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
 
+## Split into age groups
+young <- subset(df7, AGEGROUP == "YOUNG")
 
-outlierfun <- function(x, a, b){
-  if(x > a+(3*b)) print(5) 
-     else if (x < a-(3*b)) print (-5)
-           else print (x)
-    }
-  
+middle <- subset(df7, AGEGROUP == "MIDDLE")
+
+older <- subset(df7, AGEGROUP == "OLDER")
+
+## keep getting an error - see if it happens on a dummy data frame.
+
+# dummydf <- data.frame(id = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+                     # woa = c(0.8, 0.8, -0.5, 1, -0.3, 0.3, -0.09, NA, NA))
+
+# dummydf <- dummydf %>% 
+ # rowwise(woa) %>% mutate(woa = ifelse(woa < -0.1, "less", woa))
+
+## got the same error
+
+## Check structure of the data
+
+# structure(dummydf)
+
+# dummydf$woa <- as.numeric(as.character(dummydf$woa))
+
+# dummydf <- dummydf %>% 
+  # rowwise(woa) %>% mutate(woa = ifelse(woa < -0.1, -100, woa)) ### This fixes it - I believe the error was to do with trying
+### to replace the value with a word (character)
 
 
-outliers_young <- df7 %>% 
-  filter(AGEGROUP == "YOUNG")
+## Young - practice jars.
 
-outlierfun(outliers_young$PRAC01_WOA, 0.840, 0.307)
+## Young prac jar 1 M + 3*SD
+
+0.840 + (3*0.307)
+
+# 1.761
+
+## Young prac Jar 1 M - 3*SD
+
+0.840 - (3*0.307)
+
+# -0.081
+
+young <- young %>% 
+  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                                                     ifelse(PRAC01_WOA > 1.761, 100, PRAC01_WOA)))
+
+young <- young %>%
+  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                                                     ifelse(PRAC01_WOA < -0.081, -100, PRAC01_WOA)))
+
+## Young prac jar 2 M + 3*SD
+
+0.814 + (3*0.344)
+
+# 1.846
+
+## Young prac jar 2 M - 3*SD
+
+0.814 - (3*0.344)
+
+# -0.218
+
+young <- young %>% 
+  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                                                     ifelse(PRAC02_WOA > 1.846, 100, PRAC02_WOA)))
+
+young <- young %>%
+  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                                                     ifelse(PRAC02_WOA < -0.218, -100, PRAC02_WOA)))
+
+## Young prac jar 3 M + 3*SD
+
+0.798 + (3*0.388)
+
+# 1.962
+
+## Young prac jar 3 M - 3*SD
+
+0.798 - (3*0.388)
+
+# -0.366
+
+young <- young %>% 
+  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                                                     ifelse(PRAC03_WOA > 1.962, 100, PRAC03_WOA)))
+
+young <- young %>%
+  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                                                     ifelse(PRAC03_WOA < -0.366, -100, PRAC03_WOA)))
+
+
 
 ```
 
