@@ -253,10 +253,30 @@ df6$AGEGROUP <- dplyr::case_when (df6$AGEn <= 39 ~ 'YOUNG',
 
 ### Number of NAs for each age group
 
-nacount1 <- df6 %>%
-  group_by(AGEGROUP) %>%  # replace to your needs
-  summarise_all(funs(sum(is.na(.))))
+#nacount1 <- df6 %>%
+#  group_by(AGEGROUP) %>%  # replace to your needs
+#  summarise_all(funs(sum(is.na(.))))
   
+# Trials proper
+nacount1 <- df6 %>%
+  group_by(AGEGROUP) %>%  
+  select(AGEGROUP, ESTTASK1_1n, ESTTASK1_2n, ESTTASK1_3n, ESTTASK1_4n, 
+         ESTTASK1_5n, ESTTASK1_6n, ESTTASK1_7n, ESTTASK1_8n, ESTTASK1_9n, 
+         ESTTASK1_10n, ESTTASK1_11n, ESTTASK1_12n) %>% # replace to your needs
+  summarise_all(funs(sum(is.na(.))))
+
+# 1 for young
+# 4 for middle
+# 3 for older
+
+# Practice
+nacount1_prac <- df6 %>%
+  group_by(AGEGROUP) %>%  
+  select(AGEGROUP, PRAC1_1n, PRAC1_2n, PRAC1_3n) %>% # replace to your needs
+  summarise_all(funs(sum(is.na(.))))
+
+# 1 for young
+# 1 for older
 
 ```
 
@@ -352,71 +372,105 @@ df7 <- df7 %>%
 
 ## Remove from practice trials
 
-df7 <- df7 %>% 
-  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(PRAC01_WOA > 1.3|PRAC01_WOA < -1.3, as.integer(NA),PRAC01_WOA))
+df7 <- df7 %>%
+  mutate(PRAC01_WOA = ifelse(PRAC01_WOA > 1.3|PRAC01_WOA < -1.3, as.integer(NA),PRAC01_WOA))
   
-df7 <- df7 %>% 
-  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(PRAC02_WOA > 1.3|PRAC02_WOA < -1.3, as.integer(NA),PRAC02_WOA))
+df7 <- df7 %>%
+  mutate(PRAC02_WOA = ifelse(PRAC02_WOA > 1.3|PRAC02_WOA < -1.3, as.integer(NA),PRAC02_WOA))
 
-df7 <- df7 %>% 
-  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(PRAC03_WOA > 1.3|PRAC03_WOA < -1.3, as.integer(NA),PRAC03_WOA))
+df7 <- df7 %>%
+  mutate(PRAC03_WOA = ifelse(PRAC03_WOA > 1.3|PRAC03_WOA < -1.3, as.integer(NA),PRAC03_WOA))
 
 
 ## Actual trials
 
-df7 <- df7 %>% 
-  rowwise(JAR01_WOA) %>% mutate(JAR01_WOA = ifelse(JAR01_WOA > 1.3|JAR01_WOA < -1.3, as.integer(NA),JAR01_WOA))
+df7 <- df7 %>%
+  mutate(JAR01_WOA = ifelse(JAR01_WOA > 1.3|JAR01_WOA < -1.3, as.integer(NA),JAR01_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR02_WOA) %>% mutate(JAR02_WOA = ifelse(JAR02_WOA > 1.3|JAR02_WOA < -1.3, as.integer(NA),JAR02_WOA))
+df7 <- df7 %>%
+  mutate(JAR02_WOA = ifelse(JAR02_WOA > 1.3|JAR02_WOA < -1.3, as.integer(NA),JAR02_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR03_WOA) %>% mutate(JAR03_WOA = ifelse(JAR03_WOA > 1.3|JAR03_WOA < -1.3, as.integer(NA),JAR03_WOA))
+df7 <- df7 %>%
+  mutate(JAR03_WOA = ifelse(JAR03_WOA > 1.3|JAR03_WOA < -1.3, as.integer(NA),JAR03_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR04_WOA) %>% mutate(JAR04_WOA = ifelse(JAR04_WOA > 1.3|JAR04_WOA < -1.3, as.integer(NA),JAR04_WOA))
+df7 <- df7 %>%
+  mutate(JAR04_WOA = ifelse(JAR04_WOA > 1.3|JAR04_WOA < -1.3, as.integer(NA),JAR04_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR05_WOA) %>% mutate(JAR05_WOA = ifelse(JAR05_WOA > 1.3|JAR05_WOA < -1.3, as.integer(NA),JAR05_WOA))
+df7 <- df7 %>%
+  mutate(JAR05_WOA = ifelse(JAR05_WOA > 1.3|JAR05_WOA < -1.3, as.integer(NA),JAR05_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR06_WOA) %>% mutate(JAR06_WOA = ifelse(JAR06_WOA > 1.3|JAR06_WOA < -1.3, as.integer(NA),JAR06_WOA))
+df7 <- df7 %>%
+  mutate(JAR06_WOA = ifelse(JAR06_WOA > 1.3|JAR06_WOA < -1.3, as.integer(NA),JAR06_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR07_WOA) %>% mutate(JAR07_WOA = ifelse(JAR07_WOA > 1.3|JAR07_WOA < -1.3, as.integer(NA),JAR07_WOA))
+df7 <- df7 %>%
+  mutate(JAR07_WOA = ifelse(JAR07_WOA > 1.3|JAR07_WOA < -1.3, as.integer(NA),JAR07_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR08_WOA) %>% mutate(JAR08_WOA = ifelse(JAR08_WOA > 1.3|JAR08_WOA < -1.3, as.integer(NA),JAR08_WOA))
+df7 <- df7 %>%
+  mutate(JAR08_WOA = ifelse(JAR08_WOA > 1.3|JAR08_WOA < -1.3, as.integer(NA),JAR08_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR09_WOA) %>% mutate(JAR09_WOA = ifelse(JAR09_WOA > 1.3|JAR09_WOA < -1.3, as.integer(NA),JAR09_WOA))
+df7 <- df7 %>%
+  mutate(JAR09_WOA = ifelse(JAR09_WOA > 1.3|JAR09_WOA < -1.3, as.integer(NA),JAR09_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR10_WOA) %>% mutate(JAR10_WOA = ifelse(JAR10_WOA > 1.3|JAR10_WOA < -1.3, as.integer(NA),JAR10_WOA))
+df7 <- df7 %>%
+  mutate(JAR10_WOA = ifelse(JAR10_WOA > 1.3|JAR10_WOA < -1.3, as.integer(NA),JAR10_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR11_WOA) %>% mutate(JAR11_WOA = ifelse(JAR11_WOA > 1.3|JAR11_WOA < -1.3, as.integer(NA),JAR11_WOA))
+df7 <- df7 %>%
+  mutate(JAR11_WOA = ifelse(JAR11_WOA > 1.3|JAR11_WOA < -1.3, as.integer(NA),JAR11_WOA))
 
-df7 <- df7 %>% 
-  rowwise(JAR12_WOA) %>% mutate(JAR12_WOA = ifelse(JAR12_WOA > 1.3|JAR12_WOA < -1.3, as.integer(NA),JAR12_WOA))
+df7 <- df7 %>%
+  mutate(JAR12_WOA = ifelse(JAR12_WOA > 1.3|JAR12_WOA < -1.3, as.integer(NA),JAR12_WOA))
 
 ## Get NA counts
 
 ### Number of NAs for each age group
 
 nacount2 <- df7 %>%
-  group_by(AGEGROUP) %>%  # replace to your needs
+  group_by(AGEGROUP) %>%  
+  select(AGEGROUP, JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA, JAR05_WOA,
+         JAR06_WOA, JAR07_WOA, JAR08_WOA, JAR09_WOA, JAR10_WOA,
+         JAR11_WOA, JAR12_WOA) %>% # replace to your needs
   summarise_all(funs(sum(is.na(.))))
+
+df7 %>% ungroup()
+
+nacount2young <- subset(nacount2, AGEGROUP=="YOUNG")
+
+sum(nacount2young$JAR01_WOA, nacount2young$JAR02_WOA, nacount2young$JAR03_WOA, nacount2young$JAR04_WOA, 
+      nacount2young$JAR05_WOA, nacount2young$JAR06_WOA, nacount2young$JAR07_WOA, nacount2young$JAR08_WOA, 
+      nacount2young$JAR09_WOA, nacount2young$JAR10_WOA, nacount2young$JAR11_WOA, nacount2young$JAR12_WOA)
+
+# 43 NA for young
+
+nacount2midd <- subset(nacount2, AGEGROUP=="MIDDLE")
+
+sum(nacount2midd$JAR01_WOA, nacount2midd$JAR02_WOA, nacount2midd$JAR03_WOA, nacount2midd$JAR04_WOA, 
+      nacount2midd$JAR05_WOA, nacount2midd$JAR06_WOA, nacount2midd$JAR07_WOA, nacount2midd$JAR08_WOA, 
+      nacount2midd$JAR09_WOA, nacount2midd$JAR10_WOA, nacount2midd$JAR11_WOA, nacount2midd$JAR12_WOA)
+
+# 42 NA for middle-aged
+
+nacount2older <- subset(nacount2, AGEGROUP=="OLDER")
+
+sum(nacount2older$JAR01_WOA, nacount2older$JAR02_WOA, nacount2older$JAR03_WOA, nacount2older$JAR04_WOA, 
+      nacount2older$JAR05_WOA, nacount2older$JAR06_WOA, nacount2older$JAR07_WOA, nacount2older$JAR08_WOA, 
+      nacount2older$JAR09_WOA, nacount2older$JAR10_WOA, nacount2older$JAR11_WOA, nacount2older$JAR12_WOA)
+
+# 35 NA for older
+
+
 
 ```
 
 
 # Get M and SD for each age groups WOA values
+## Get outliers from Young practice jars
 ```{r}
 
-summarystats_jars <- df7 %>% 
+summarystats_jars_prac <- df7 %>% 
   group_by(AGEGROUP) %>%
   get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
+
+df7 %>% ungroup()
 
 ## Split into age groups
 young <- subset(df7, AGEGROUP == "YOUNG")
@@ -460,13 +514,12 @@ older <- subset(df7, AGEGROUP == "OLDER")
 
 # -0.081
 
-young <- young %>% 
-  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
-                                                     ifelse(PRAC01_WOA > 1.761, 100, PRAC01_WOA)))
-
 young <- young %>%
-  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
-                                                     ifelse(PRAC01_WOA < -0.081, -100, PRAC01_WOA)))
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA > 1.761, 100, PRAC01_WOA)),
+         PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA < -0.081, -100, PRAC01_WOA))) # 1 outlier
+
 
 ## Young prac jar 2 M + 3*SD
 
@@ -480,13 +533,12 @@ young <- young %>%
 
 # -0.218
 
-young <- young %>% 
-  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
-                                                     ifelse(PRAC02_WOA > 1.846, 100, PRAC02_WOA)))
-
 young <- young %>%
-  rowwise(PRAC02_WOA) %>% mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
-                                                     ifelse(PRAC02_WOA < -0.218, -100, PRAC02_WOA)))
+  mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA > 1.846, 100, PRAC02_WOA)),
+         PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA < -0.218, -100, PRAC02_WOA))) # No outliers
+
 
 ## Young prac jar 3 M + 3*SD
 
@@ -500,16 +552,1006 @@ young <- young %>%
 
 # -0.366
 
-young <- young %>% 
-  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
-                                                     ifelse(PRAC03_WOA > 1.962, 100, PRAC03_WOA)))
+young <- young %>%
+  mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA > 1.962, 100, PRAC03_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA < -0.366, -100, PRAC03_WOA))) # No outliers
+
+
+## Take out any outliers to prep for getting new Ms and SDs
+# young$PRAC01_WOA_OUTLIER <- young %>% 
+#  rowwise(PRAC01_WOA) %>% mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+#                                                 ifelse(PRAC01_WOA < 100, PRAC01_WOA, is.integer(NA)),
+#                                                 ifelse(PRAC01_WOA > -100, PRAC01_WOA, is.integer(NA))))
+
+
+## The above code doesn't work properly 
+
+## Create new df without the outliers
+
+young_exl_out <- select(young, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA)
+
+young_exl_out <- young_exl_out %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == 100 |PRAC01_WOA == -100, as.integer(NA), PRAC01_WOA)))
+
+youngmsd <- young_exl_out %>% 
+  get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
+
+## New young prac jar 1 M + 3*SDs
+
+0.863 + (3*0.269)
+
+# 1.67
+
+## New young prac jar 1 M - 3*SDs
+
+0.863 - (3*0.269)
+
+# 0.056
+
+# Replace the values taken
 
 young <- young %>%
-  rowwise(PRAC03_WOA) %>% mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
-                                                     ifelse(PRAC03_WOA < -0.366, -100, PRAC03_WOA)))
-
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == 100, 1.67, PRAC01_WOA)),
+         PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == -100, 0.056, PRAC01_WOA)))
 
 
 ```
+
+
+## Outliers from middle aged group practice jars
+```{r}
+## Middle - practice jars.
+
+## Middle prac jar 1 M + 3*SD
+
+0.801 + (3*0.346)
+
+# 1.839
+
+## Middle prac Jar 1 M - 3*SD
+
+0.801 - (3*0.346)
+
+# -0.237
+
+middle <- middle %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA > 1.839, 100, PRAC01_WOA)),
+         PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA < -0.237, -100, PRAC01_WOA))) ## No outliers
+
+
+
+## Middle prac jar 2 M + 3*SD
+
+0.839 + (3*0.304)
+
+# 1.751
+
+## Middle prac Jar 2 M - 3*SD
+
+0.839 - (3*0.304)
+
+# -0.073
+
+middle <- middle %>%
+  mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA > 1.751, 100, PRAC02_WOA)),
+         PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA < -0.073, -100, PRAC02_WOA))) ## 1 Outlier
+
+
+
+## Middle prac jar 3 M + 3*SD
+
+0.769 + (3*0.342)
+
+# 1.795
+
+## Middle prac Jar 3 M - 3*SD
+
+0.769 - (3*0.342)
+
+# -0.257
+
+middle <- middle %>%
+  mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA > 1.795, 100, PRAC03_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA < -0.257, -100, PRAC03_WOA))) ## 1 outlier
+
+
+## Create new df without the outliers
+
+middle_exl_out <- select(middle, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA)
+
+middle_exl_out <- middle_exl_out %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == 100 |PRAC01_WOA == -100, as.integer(NA), PRAC01_WOA)),
+         PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA == 100 | PRAC02_WOA == -100, as.integer(NA), PRAC02_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == 100 | PRAC03_WOA == -100, as.integer(NA), PRAC03_WOA)))
+
+middlemsd <- middle_exl_out %>% 
+  get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
+
+## New middle prac jar 2 M + 3*SDs
+
+0.859 + (3*0.272)
+
+# 1.675
+
+## New middle prac jar 2 M - 3*SDs
+
+0.859 - (3*0.272)
+
+# 0.043
+
+## New middle prac jar 3 M + 3*SDs
+
+0.792 + (3*0.306)
+
+# 1.71
+
+## New middle prac jar 3 M - 3*SDs
+
+0.792 - (3*0.306)
+
+# -0.126
+
+
+# Replace the values taken
+
+middle <- middle %>%
+  mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA == 100, 1.675, PRAC02_WOA)),
+         PRAC02_WOA= ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA == -100, 0.043, PRAC02_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == 100, 1.71, PRAC03_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == -100, -0.126, PRAC03_WOA)))
+
+
+```
+
+
+## Outliers from middle aged group practice jars
+
+```{r}
+older %>% ungroup()
+
+## Older - practice jars.
+
+## Older prac jar 1 M + 3*SD
+
+0.690 + (3*0.391)
+
+# 1.863
+
+## Older prac Jar 1 M - 3*SD
+
+0.690 - (3*0.391)
+
+# -0.483
+
+older <- older %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA > 1.863, 100, PRAC01_WOA)),
+         PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA < -0.483, -100, PRAC01_WOA))) ## 1 outlier
+
+
+## Older prac jar 2 M + 3*SD
+
+0.844 + (3*0.272)
+
+# 1.66
+
+## Older prac Jar 2 M - 3*SD
+
+0.844 - (3*0.272)
+
+# 0.028
+
+older <- older %>%
+  mutate(PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA > 1.66, 100, PRAC02_WOA)),
+         PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA < 0.028, -100, PRAC02_WOA))) ## No outliers
+
+
+## Older prac jar 3 M + 3*SD
+
+0.700 + (3*0.445)
+
+# 2.035
+
+## Older prac Jar 3 M - 3*SD
+
+0.700 - (3*0.445)
+
+# -0.635
+
+older <- older %>%
+  mutate(PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA > 2.035, 100, PRAC03_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA < -0.635, -100, PRAC03_WOA))) ## 1 outlier
+
+
+
+## Create new df without the outliers
+
+older_exl_out <- select(older, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA)
+
+older_exl_out <- older_exl_out %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == 100 |PRAC01_WOA == -100, as.integer(NA), PRAC01_WOA)),
+         PRAC02_WOA = ifelse(is.na(PRAC02_WOA), NA,
+                             ifelse(PRAC02_WOA == 100 | PRAC02_WOA == -100, as.integer(NA), PRAC02_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == 100 | PRAC03_WOA == -100, as.integer(NA), PRAC03_WOA)))
+
+oldermsd <- older_exl_out %>% 
+  get_summary_stats(PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, type = "mean_sd")
+
+## New older prac jar 1 M + 3*SDs
+
+0.712 + (3*0.357)
+
+# 1.783
+
+## New older prac jar 1 M - 3*SDs
+
+0.712 - (3*0.357)
+
+# -0.359
+
+## New older prac jar 3 M + 3*SDs
+
+0.739 + (3*0.353)
+
+# 1.798
+
+## New older prac jar 3 M - 3*SDs
+
+0.739 - (3*0.353)
+
+# -0.32
+
+
+# Replace the values taken
+
+older <- older %>%
+  mutate(PRAC01_WOA = ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == 100, 1.783, PRAC01_WOA)),
+         PRAC01_WOA= ifelse(is.na(PRAC01_WOA), NA,
+                             ifelse(PRAC01_WOA == -100, -0.359, PRAC01_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == 100, 1.798, PRAC03_WOA)),
+         PRAC03_WOA = ifelse(is.na(PRAC03_WOA), NA,
+                             ifelse(PRAC03_WOA == -100, -0.32, PRAC03_WOA)))
+
+```
+
+
+## Outliers for young adults 12 jars
+```{r}
+summarystats_jars <- df7 %>% 
+  group_by(AGEGROUP) %>%
+  get_summary_stats(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                    JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                    JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, type = "mean_sd")
+df7  %>% ungroup()
+
+summarystats_jars$M_PLUS_3SD <- summarystats_jars$mean + (3*summarystats_jars$sd)
+
+summarystats_jars$M_MINUS_3SD <- summarystats_jars$mean - (3*summarystats_jars$sd)
+
+young %>% ungroup()
+
+## Get young jar 1 outliers
+
+young <- young %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA > 2.055, 100, JAR01_WOA)),
+         JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA < -0.411, -100, JAR01_WOA))) ## 1 outlier
+
+
+## Get young jar 2 outliers
+
+young <- young %>%
+  mutate(JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA > 2.083, 100, JAR02_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA < -0.731, -100, JAR02_WOA))) ## 1 outlier
+
+
+## Get young jar 3 outliers
+
+young <- young %>%
+  mutate(JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA > 1.993, 100, JAR03_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA < -0.527, -100, JAR03_WOA))) ## No outliers
+
+
+## Get young jar 4 outliers
+
+young <- young %>%
+  mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA > 1.800, 100, JAR04_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA < -0.426, -100, JAR04_WOA))) ## 1 outlier
+
+
+## Get young jar 5 outliers
+
+young <- young %>%
+  mutate(JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA > 1.838, 100, JAR05_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA < -0.550, -100, JAR05_WOA))) ## No outliers
+
+
+## Get young jar 6 outliers
+
+young <- young %>%
+  mutate(JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA > 1.816, 100, JAR06_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA < -0.338, -100, JAR06_WOA))) ## No outliers
+
+## Get young jar 7 outliers
+
+young <- young %>%
+  mutate(JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA > 1.831, 100, JAR07_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA < -0.365, -100, JAR07_WOA))) ## No outliers
+
+
+## Get young jar 8 outliers
+
+young <- young %>%
+  mutate(JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA > 1.880, 100, JAR08_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA < -0.718, -100, JAR08_WOA))) ## No outliers
+
+
+## Get young jar 9 outliers
+
+young <- young %>%
+  mutate(JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA > 1.859, 100, JAR09_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA < -0.481, -100, JAR09_WOA))) ## No outliers
+
+
+## Get young jar 10 outliers
+
+young <- young %>%
+  mutate(JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA > 1.870, 100, JAR10_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA < -0.464, -100, JAR10_WOA))) ## 1 outlier
+
+
+## Get young jar 11 outliers
+
+young <- young %>%
+  mutate(JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA > 1.961, 100, JAR11_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA < -0.661, -100, JAR11_WOA))) ## No outliers
+
+
+## Get young jar 12 outliers
+
+young <- young %>%
+  mutate(JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA > 2.140, 100, JAR12_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA < -0.698, -100, JAR12_WOA))) ## 1 outlier
+
+
+## Create new df without the outliers
+
+young_jars_exl_out <- select(young, JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA)
+
+young_jars_exl_out <- young_jars_exl_out %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == 100 |JAR01_WOA == -100, as.integer(NA), JAR01_WOA)),
+        JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == 100 | JAR02_WOA == -100, as.integer(NA), JAR02_WOA)),
+        JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == 100 | JAR03_WOA == -100, as.integer(NA), JAR03_WOA)),
+        JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == 100 | JAR04_WOA == -100, as.integer(NA), JAR04_WOA)),
+        JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == 100 | JAR05_WOA == -100, as.integer(NA), JAR05_WOA)),
+        JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == 100 | JAR06_WOA == -100, as.integer(NA), JAR06_WOA)),
+        JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == 100 | JAR07_WOA == -100, as.integer(NA), JAR07_WOA)),
+        JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == 100 | JAR08_WOA == -100, as.integer(NA), JAR08_WOA)),
+        JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == 100 | JAR09_WOA == -100, as.integer(NA), JAR09_WOA)),
+        JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == 100 | JAR10_WOA == -100, as.integer(NA), JAR10_WOA)),
+        JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == 100 | JAR11_WOA == -100, as.integer(NA), JAR11_WOA)),
+        JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == 100 | JAR12_WOA == -100, as.integer(NA), JAR12_WOA)))
+
+youngmsd_jars <- young_jars_exl_out %>% 
+  get_summary_stats(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, type = "mean_sd")
+
+youngmsd_jars$M_PLUS_3SD <- youngmsd_jars$mean + (3*youngmsd_jars$sd)
+
+youngmsd_jars$M_MINUS_3SD <- youngmsd_jars$mean - (3*youngmsd_jars$sd)
+
+
+youngout <- subset(young, AGEGROUP=="YOUNG")
+
+## Get sum of outliers for young group for jars
+
+sum(young$JAR01_WOA >= 100|young$JAR01_WOA <= -100|young$JAR02_WOA >= 100|
+      young$JAR02_WOA== -100|young$JAR03_WOA >= 100|young$JAR03_WOA <= -100|
+      young$JAR04_WOA >= 100|young$JAR04_WOA <= -100|young$JAR05_WOA >= 100|
+      young$JAR05_WOA <= -100|young$JAR06_WOA >= 100|young$JAR06_WOA <= -100|
+      young$JAR07_WOA >= 100|young$JAR07_WOA <= -100|young$JAR08_WOA >= 100|
+      young$JAR08_WOA <= -100|young$JAR09_WOA >= 100|young$JAR09_WOA <= -100|
+      young$JAR10_WOA >= 100|young$JAR10_WOA <= -100|young$JAR11_WOA >= 100|
+      young$JAR11_WOA <= -100|young$JAR12_WOA >= 100|young$JAR12_WOA <= -100, na.rm=TRUE)
+
+## 5 data points adjusted for young adult group
+
+# Replace the values taken
+
+young <- young %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == 100, 1.741, JAR01_WOA)),
+         JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == -100, -0.011, JAR01_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == 100, 1.836, JAR02_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == -100, -0.396, JAR02_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == 100, 1.993, JAR03_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == -100, -0.527, JAR03_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == 100, 1.706, JAR04_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == -100, -0.280, JAR04_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == 100, 1.838, JAR05_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == -100, -0.550, JAR05_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == 100, 1.816, JAR06_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == -100, -0.338, JAR06_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == 100, 1.831, JAR07_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == -100, -0.365, JAR07_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == 100, 1.880, JAR08_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == -100, -0.718, JAR08_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == 100, 1.859, JAR09_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == -100, -0.481, JAR09_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == 100, 1.770, JAR10_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == -100, -0.306, JAR10_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == 100, 1.961, JAR11_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == -100, -0.661, JAR11_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == 100, 1.862, JAR12_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == -100, -0.328, JAR12_WOA)))
+
+```
+
+## Outliers for middle-aged adults 12 jars
+```{r}
+
+middle %>% ungroup()
+
+## Get middle jar 1 outliers
+
+middle <- middle %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA > 1.477, 100, JAR01_WOA)),
+         JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA < 0.361, -100, JAR01_WOA))) ## No outliers
+
+
+## Get middle jar 2 outliers
+
+middle <- middle %>%
+  mutate(JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA > 1.905, 100, JAR02_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA < -0.393, -100, JAR02_WOA))) ## No outliers
+
+
+## Get middle jar 3 outliers
+
+middle <- middle %>%
+  mutate(JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA > 1.896, 100, JAR03_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA < -0.330, -100, JAR03_WOA))) ## No outliers
+
+
+## Get middle jar 4 outliers
+
+middle <- middle %>%
+  mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA > 2.128, 100, JAR04_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA < -0.680, -100, JAR04_WOA))) ## 1 outlier
+
+
+## Get middle jar 5 outliers
+
+middle <- middle %>%
+  mutate(JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA > 1.994, 100, JAR05_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA < -0.490, -100, JAR05_WOA))) ## No outliers
+
+## Get middle jar 6 outliers
+
+middle <- middle %>%
+  mutate(JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA > 2.108, 100, JAR06_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA < -0.700, -100, JAR06_WOA))) ## 1 outlier
+
+
+## Get middle jar 7 outliers
+
+middle <- middle %>%
+  mutate(JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA > 1.954, 100, JAR07_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA < -0.602, -100, JAR07_WOA))) ## 1 outlier
+
+## Get middle jar 8 outliers
+
+middle <- middle %>%
+  mutate(JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA > 2.111, 100, JAR08_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA < -0.829, -100, JAR08_WOA))) ## 1 outlier
+
+## Get middle jar 9 outliers
+
+middle <- middle %>%
+  mutate(JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA > 1.967, 100, JAR09_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA < -0.451, -100, JAR09_WOA))) ## 1 outlier
+
+## Get middle jar 10 outliers
+middle <- middle %>%
+  mutate(JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA > 2.121, 100, JAR10_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA < -0.729, -100, JAR10_WOA))) ## 1 outlier
+
+## Get middle jar 11 outliers
+middle <- middle %>%
+  mutate(JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA > 1.922, 100, JAR11_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA < -0.358, -100, JAR11_WOA))) ## No outliers
+
+## Get middle jar 12 outliers
+middle <- middle %>%
+  mutate(JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA > 1.892, 100, JAR12_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA < -0.406, -100, JAR12_WOA))) ## No outliers
+
+## Create new df without the outliers
+
+middle_jars_exl_out <- select(middle, JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA)
+
+middle_jars_exl_out <- middle_jars_exl_out %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == 100 |JAR01_WOA == -100, as.integer(NA), JAR01_WOA)),
+        JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == 100 | JAR02_WOA == -100, as.integer(NA), JAR02_WOA)),
+        JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == 100 | JAR03_WOA == -100, as.integer(NA), JAR03_WOA)),
+        JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == 100 | JAR04_WOA == -100, as.integer(NA), JAR04_WOA)),
+        JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == 100 | JAR05_WOA == -100, as.integer(NA), JAR05_WOA)),
+        JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == 100 | JAR06_WOA == -100, as.integer(NA), JAR06_WOA)),
+        JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == 100 | JAR07_WOA == -100, as.integer(NA), JAR07_WOA)),
+        JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == 100 | JAR08_WOA == -100, as.integer(NA), JAR08_WOA)),
+        JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == 100 | JAR09_WOA == -100, as.integer(NA), JAR09_WOA)),
+        JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == 100 | JAR10_WOA == -100, as.integer(NA), JAR10_WOA)),
+        JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == 100 | JAR11_WOA == -100, as.integer(NA), JAR11_WOA)),
+        JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == 100 | JAR12_WOA == -100, as.integer(NA), JAR12_WOA)))
+
+middlemsd_jars <- middle_jars_exl_out %>% 
+  get_summary_stats(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, type = "mean_sd")
+
+middlemsd_jars$M_PLUS_3SD <- middlemsd_jars$mean + (3*middlemsd_jars$sd)
+
+middlemsd_jars$M_MINUS_3SD <- middlemsd_jars$mean - (3*middlemsd_jars$sd)
+
+
+## Get sum of outliers for young group for jars
+
+sum(middle$JAR01_WOA <= -100|middle$JAR02_WOA <= -100|middle$JAR03_WOA <= -100|
+      middle$JAR04_WOA <= -100|middle$JAR05_WOA <= -100|middle$JAR06_WOA <= -100|
+      middle$JAR07_WOA <= -100|middle$JAR08_WOA <= -100|middle$JAR09_WOA <= -100|
+      middle$JAR10_WOA <= -100|middle$JAR11_WOA <= -100|middle$JAR12_WOA <= -100, na.rm=TRUE)
+
+## It says 5 but I thought there were 6...?
+
+# Replace the values taken
+
+middle <- middle %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == 100, 1.477, JAR01_WOA)),
+         JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == -100, 0.361, JAR01_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == 100, 1.905, JAR02_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == -100, -0.393, JAR02_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == 100, 1.896, JAR03_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == -100, -0.330, JAR03_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == 100, 1.901, JAR04_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == -100, -0.373, JAR04_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == 100, 1.994, JAR05_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == -100, -0.490, JAR05_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == 100, 1.989, JAR06_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == -100, -0.519, JAR06_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == 100, 1.862, JAR07_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == -100, -0.454, JAR07_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == 100, 1.904, JAR08_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == -100, -0.538, JAR08_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == 100, 1.885, JAR09_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == -100, -0.323, JAR09_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == 100, 1.983, JAR10_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == -100, -0.525, JAR10_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == 100, 1.922, JAR11_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == -100, -0.358, JAR11_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == 100, 1.862, JAR12_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == -100, -0.406, JAR12_WOA)))
+
+```
+
+
+## Outliers for older adults 12 jars
+```{r}
+
+older %>% ungroup()
+
+## Get older jar 1 outliers
+
+older <- older %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA > 1.528, 100, JAR01_WOA)),
+         JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA < 0.226, -100, JAR01_WOA))) ## No outliers
+
+## Get older jar 2 outliers
+
+older <- older %>%
+  mutate(JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA > 1.630, 100, JAR02_WOA)),
+         JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA < -0.092, -100, JAR02_WOA))) ## No outliers
+
+## Get older jar 3 outliers
+
+older <- older %>%
+  mutate(JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA > 1.780, 100, JAR03_WOA)),
+         JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA < -0.380, -100, JAR03_WOA))) ## No outliers
+
+## Get older jar 4 outliers
+
+older <- older %>%
+  mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA > 1.811, 100, JAR04_WOA)),
+         JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA < -0.487, -100, JAR04_WOA))) ## No outliers
+
+## Get older jar 5 outliers
+
+older <- older %>%
+  mutate(JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA > 1.678, 100, JAR05_WOA)),
+         JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA < -0.350, -100, JAR05_WOA))) ## No outliers
+
+## Get older jar 6 outliers
+
+older <- older %>%
+  mutate(JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA > 1.863, 100, JAR06_WOA)),
+         JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA < -0.525, -100, JAR06_WOA))) ## 1 outlier
+
+
+## Get older jar 7 outliers
+
+older <- older %>%
+  mutate(JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA > 1.641, 100, JAR07_WOA)),
+         JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA < -0.351, -100, JAR07_WOA))) ## No outliers
+
+## Get older jar 8 outliers
+
+older <- older %>%
+  mutate(JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA > 1.848, 100, JAR08_WOA)),
+         JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA < -0.630, -100, JAR08_WOA))) ## No outliers
+
+## Get older jar 9 outliers
+
+older <- older %>%
+  mutate(JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA > 1.802, 100, JAR09_WOA)),
+         JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA < -0.430, -100, JAR09_WOA))) ## No outliers
+
+## Get older jar 10 outliers
+
+older <- older %>%
+  mutate(JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA > 1.786, 100, JAR10_WOA)),
+         JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA < -0.386, -100, JAR10_WOA))) ## No outliers
+
+## Get older jar 11 outliers
+
+older <- older %>%
+  mutate(JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA > 1.727, 100, JAR11_WOA)),
+         JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA < -0.367, -100, JAR11_WOA))) ## No outliers
+
+## Get older jar 12 outliers
+
+older <- older %>%
+  mutate(JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA > 1.808, 100, JAR12_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA < -0.310, -100, JAR12_WOA))) ## 1 outlier
+
+
+## Create new df without the outliers
+
+older_jars_exl_out <- select(older, JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA)
+
+older_jars_exl_out <- older_jars_exl_out %>%
+  mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
+                             ifelse(JAR01_WOA == 100 |JAR01_WOA == -100, as.integer(NA), JAR01_WOA)),
+        JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
+                             ifelse(JAR02_WOA == 100 | JAR02_WOA == -100, as.integer(NA), JAR02_WOA)),
+        JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
+                             ifelse(JAR03_WOA == 100 | JAR03_WOA == -100, as.integer(NA), JAR03_WOA)),
+        JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
+                             ifelse(JAR04_WOA == 100 | JAR04_WOA == -100, as.integer(NA), JAR04_WOA)),
+        JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
+                             ifelse(JAR05_WOA == 100 | JAR05_WOA == -100, as.integer(NA), JAR05_WOA)),
+        JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == 100 | JAR06_WOA == -100, as.integer(NA), JAR06_WOA)),
+        JAR07_WOA = ifelse(is.na(JAR07_WOA), NA,
+                             ifelse(JAR07_WOA == 100 | JAR07_WOA == -100, as.integer(NA), JAR07_WOA)),
+        JAR08_WOA = ifelse(is.na(JAR08_WOA), NA,
+                             ifelse(JAR08_WOA == 100 | JAR08_WOA == -100, as.integer(NA), JAR08_WOA)),
+        JAR09_WOA = ifelse(is.na(JAR09_WOA), NA,
+                             ifelse(JAR09_WOA == 100 | JAR09_WOA == -100, as.integer(NA), JAR09_WOA)),
+        JAR10_WOA = ifelse(is.na(JAR10_WOA), NA,
+                             ifelse(JAR10_WOA == 100 | JAR10_WOA == -100, as.integer(NA), JAR10_WOA)),
+        JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
+                             ifelse(JAR11_WOA == 100 | JAR11_WOA == -100, as.integer(NA), JAR11_WOA)),
+        JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == 100 | JAR12_WOA == -100, as.integer(NA), JAR12_WOA)))
+
+oldermsd_jars <- older_jars_exl_out %>% 
+  get_summary_stats(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                             JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                             JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, type = "mean_sd")
+
+oldermsd_jars$M_PLUS_3SD <- oldermsd_jars$mean + (3*oldermsd_jars$sd)
+
+oldermsd_jars$M_MINUS_3SD <- oldermsd_jars$mean - (3*oldermsd_jars$sd)
+
+
+## Get sum of outliers for young group for jars
+
+sum(older$JAR01_WOA == -100|older$JAR02_WOA == -100|older$JAR03_WOA == -100|
+      older$JAR04_WOA == -100|older$JAR05_WOA == -100|older$JAR06_WOA == -100|
+      older$JAR07_WOA == -100|older$JAR08_WOA == -100|older$JAR09_WOA == -100|
+      older$JAR10_WOA == -100|older$JAR11_WOA == -100|older$JAR12_WOA == -100, na.rm=TRUE)
+
+## 2 outliers adjusted for older adults
+
+# Replace the values taken
+
+older <- older %>%
+  mutate(JAR06_WOA = ifelse(is.na(JAR06_WOA), NA,
+                             ifelse(JAR06_WOA == -100, -0.329, JAR06_WOA)),
+         JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
+                             ifelse(JAR12_WOA == -100, -0.135, JAR12_WOA)))
+
+```
+
+
+# Find outliers for IQ and DASS for each age group
+```{r}
+
+## Young
+## Get Ms and SDs
+
+young %>% ungroup()
+
+youngmsd_Qs <- young %>% 
+  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+
+## Get mean + 3*SDs and mean - 3*SDs
+
+youngmsd_Qs$M_PLUS_3SD <- youngmsd_Qs$mean + (3*youngmsd_Qs$sd)
+
+youngmsd_Qs$M_MINUS_3SD <- youngmsd_Qs$mean - (3*youngmsd_Qs$sd)
+
+
+## Identify outliers from DASS
+
+young <- young %>%
+  mutate(DASS = ifelse(DASS > 25.236, 100, DASS),
+         DASS = ifelse(DASS < -11.322, -100, DASS)) ## No outliers
+
+## Identify outliers for Fluid IQ
+
+young <- young %>%
+  mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 10.215, 100, AVFLUIDIQ),
+         AVFLUIDIQ = ifelse(AVFLUIDIQ < -2.193, -100, AVFLUIDIQ)) ## No outliers
+
+
+## Middle
+## Get Ms and SDs
+
+middle %>% ungroup()
+
+middlemsd_Qs <- middle %>% 
+  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+
+## Get mean + 3*SDs and mean - 3*SDs
+
+middlemsd_Qs$M_PLUS_3SD <- middlemsd_Qs$mean + (3*middlemsd_Qs$sd)
+
+middlemsd_Qs$M_MINUS_3SD <- middlemsd_Qs$mean - (3*middlemsd_Qs$sd)
+
+## Identify outliers from DASS
+
+middle <- middle %>%
+  mutate(DASS = ifelse(DASS > 22.048, 100, DASS),
+         DASS = ifelse(DASS < -9.788, -100, DASS)) ## No outliers
+
+## Identify outliers for Fluid IQ
+
+middle <- middle %>%
+  mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 9.404, 100, AVFLUIDIQ),
+         AVFLUIDIQ = ifelse(AVFLUIDIQ < -1.126, -100, AVFLUIDIQ)) ## No outliers
+
+
+## Older
+## Get Ms and SDs
+
+older %>% ungroup()
+
+oldermsd_Qs <- older %>% 
+  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+
+## Get mean + 3*SDs and mean - 3*SDs
+
+oldermsd_Qs$M_PLUS_3SD <- oldermsd_Qs$mean + (3*oldermsd_Qs$sd)
+
+oldermsd_Qs$M_MINUS_3SD <- oldermsd_Qs$mean - (3*oldermsd_Qs$sd)
+
+## Identify outliers from DASS
+
+older <- older %>%
+  mutate(DASS = ifelse(DASS > 16.252, 100, DASS),
+         DASS = ifelse(DASS < -10.142, -100, DASS)) ## 1 outlier
+
+## Recalculate DASS M and SD without the outlier
+
+older_exl_out_qs <- older %>% 
+  mutate(DASS = ifelse(DASS == 100, as.integer(NA), DASS))
+
+oldermsd_Qs_exl_out <- older_exl_out_qs %>% 
+  get_summary_stats(DASS, type = "mean_sd")
+
+## New mean + 3*SDs
+
+oldermsd_Qs_exl_out$M_PLUS_3SD <- oldermsd_Qs_exl_out$mean + (3*oldermsd_Qs_exl_out$sd)
+
+
+# Replace the DASS values taken
+
+older <- older %>%
+  mutate(DASS = ifelse(DASS == 100, 14.312, DASS))
+
+## Identify outliers for Fluid IQ
+
+older <- older %>%
+  mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 8.674, 100, AVFLUIDIQ),
+         AVFLUIDIQ = ifelse(AVFLUIDIQ < -0.674, -100, AVFLUIDIQ)) ## No outliers
+
+```
+
 
 
