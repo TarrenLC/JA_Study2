@@ -1,0 +1,647 @@
+---
+title: "JA_Analyses_Comments"
+author: "T.L"
+date: "2022-09-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Packages
+```{r}
+
+library(rstatix) # Basic analyses like ANOVA etc
+
+library(lme4) # For multilevel models
+
+library(lmerTest) # For lmm p-values
+
+#FLEXPLOT# if not already installed use devtools::install_github("dustinfife/flexplot")
+
+library(flexplot)
+
+library(tidyverse) # For pivotting longer etc
+
+library(sjPlot) #for exporting nice tables of our output
+
+library(flextable) #another package to make apa tables
+
+```
+
+
+# Load in data
+```{r}
+
+load(file = "Judge_Advisor_2022_preprocessed.RData")
+
+#turning off scientific notation 
+options(scipen=999)
+
+```
+
+# Getting to know the data
+## Visualisations
+```{r}
+# DASS by Age
+
+flexplot(DASS~AGEn, data=full_ja_df)
+
+# AvFluidIQ by Age
+
+flexplot(AVFLUIDIQ~AGEn, data=full_ja_df)
+
+# Perceived Advice Accuracy by Age
+
+flexplot(PERCEIVED_ADVICE_ACCURACYn~AGEn, data=full_ja_df)
+
+
+# Pre confidence by Age
+
+flexplot(PRE_CONFIDENCEn~AGEn, data=full_ja_df)
+
+# Post confidence by Age
+
+flexplot(PRE_CONFIDENCEn~AGEn, data=full_ja_df)
+
+# Emotion regulation by Age
+
+flexplot(AGEn~EMO_REGn, data=full_ja_df)
+
+# Emotion regulation effort by Age
+
+flexplot(EMO_REG_EFFORT1n~AGEn, data=full_ja_df)
+
+flexplot(EMO_REG_EFFORT2n~AGEn, data=full_ja_df)
+
+
+```
+
+
+
+# Opinion difference
+## Get to know the data
+```{r}
+
+### Put data in a long dataframe
+
+pracs <- select(full_ja_df, ID, AGEGROUP, PRAC1_1n, PRAC1_2n, PRAC1_3n)
+
+pracs$ID <- as.factor(pracs$ID)
+
+# Actual prac jars values
+## Jar 1 = 188
+## Jar 2 = 141
+## Jar 3 = 71
+
+# Create opinion difference scores (initial minus actual coins)
+pracs <- pracs %>% 
+  rowwise() %>% 
+  mutate(PRAC1_OP = PRAC1_1n-188)
+
+pracs <- pracs %>% 
+  rowwise() %>% 
+  mutate(PRAC2_OP = PRAC1_2n-141)
+
+pracs <- pracs %>% 
+  rowwise() %>% 
+  mutate(PRAC3_OP = PRAC1_3n-71)
+
+pracs <-  pivot_longer(pracs, cols = c("PRAC1_OP", "PRAC2_OP","PRAC3_OP"), 
+                      names_to = "PRACTICE_TRIAL", values_to = "OPINIONDIFF")
+
+pracs$PRACTICE_TRIAL <- as.factor(pracs$PRACTICE_TRIAL)
+
+levels(pracs$PRACTICE_TRIAL)
+
+
+# Look at some visualisations
+flexplot(OPINIONDIFF~1, data=pracs)
+
+flexplot(OPINIONDIFF~AGEGROUP, data=pracs)
+
+flexplot(OPINIONDIFF~PRACTICE_TRIAL, data=pracs)
+
+flexplot(OPINIONDIFF~PRACTICE_TRIAL + AGEGROUP, data=pracs)
+
+flexplot(OPINIONDIFF~PRACTICE_TRIAL | AGEGROUP, data=pracs)
+
+## Appears to be some extreme outliers.
+pracs %>% 
+  group_by(AGEGROUP) %>%
+  identify_outliers(OPINIONDIFF) # 8 outliers...
+
+
+```
+
+### Adjust outliers +/- 3SDs from M
+```{r}
+# Put data back to wide
+
+pracs <- spread(pracs, PRACTICE_TRIAL, OPINIONDIFF)
+
+summarystats_op <- pracs %>% 
+  group_by(AGEGROUP) %>%
+  get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
+
+ungroup(pracs)
+
+summarystats_op$M_PLUS_3SD <- summarystats_op$mean + (3*summarystats_op$sd)
+
+summarystats_op$M_MINUS_3SD <- summarystats_op$mean - (3*summarystats_op$sd)
+
+## Split into age groups
+young <- subset(pracs, AGEGROUP == "YOUNG")
+
+middle <- subset(pracs, AGEGROUP == "MIDDLE")
+
+older <- subset(pracs, AGEGROUP == "OLDER")
+
+```
+
+
+#### Younger adults
+```{r}
+
+# Change outliers to 5000 if above M+3*SDs
+# Change outliers to -5000 if below M-3*SDs 
+# Easy to identify and sort out from other values
+
+young <- young %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP > 402.353, 5000, PRAC1_OP)), # 1 identified
+         PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP < -518.353, -5000, PRAC1_OP))) 
+
+young <- young %>%
+  mutate(PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP > 449.818, 5000, PRAC2_OP)), # 1 identified
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP < -488.600, -5000, PRAC2_OP)),
+         PRAC3_OP= ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP > 237.886, 5000, PRAC3_OP)), # 1 identified
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP < -259.460, -5000, PRAC3_OP))) 
+
+## Create new df without the outliers
+
+young_exl_out <- select(young, PRAC1_OP, PRAC2_OP, PRAC3_OP)
+
+young_exl_out <- young_exl_out %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+
+youngmsd <- young_exl_out %>% 
+  get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
+
+youngmsd$M_PLUS_3SD <- youngmsd$mean + (3*youngmsd$sd)
+
+# Replace the values taken
+
+young <- young %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000, 172.012, PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000, 213.740, PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000, 97.689, PRAC3_OP)))
+
+```
+
+
+#### Middle-aged adults
+```{r}
+
+# Change outliers to 5000 if above M+3*SDs
+# Change outliers to -5000 if below M-3*SDs 
+# Easy to identify and sort out from other values
+
+middle <- middle %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP > 973.971, 5000, PRAC1_OP)), # 1 identified
+         PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP < -1002.711, -5000, PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP > 1007.667, 5000, PRAC2_OP)), # 1 identified
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP < -972.705, -5000, PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP > 197.910, 5000, PRAC3_OP)), # 1 identified
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP < -211.836, -5000, PRAC3_OP))) 
+
+## Create new df without the outliers
+
+middle_exl_out <- select(middle, PRAC1_OP, PRAC2_OP, PRAC3_OP)
+
+middle_exl_out <- middle_exl_out %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+
+middlemsd <- middle_exl_out %>% 
+  get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
+
+middlemsd$M_PLUS_3SD <- middlemsd$mean + (3*middlemsd$sd)
+
+
+# Replace the values taken
+
+middle <- middle %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000, 144.812, PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000, 153.545, PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000, 81.057, PRAC3_OP)))
+
+```
+
+
+#### Older adults
+```{r}
+# Change outliers to 5000 if above M+3*SDs
+# Change outliers to -5000 if below M-3*SDs 
+# Easy to identify and sort out from other values
+
+older<- older %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP > 86.898, 5000, PRAC1_OP)), # No outliers
+         PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP < -259.734, -5000, PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP > 107.020, 5000, PRAC2_OP)), # 1 identified
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP < -218.474, -5000, PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP > 56.977, 5000, PRAC3_OP)), # 1 identified
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP < -113.495, -5000, PRAC3_OP))) 
+
+
+## Create new df without the outliers
+
+older_exl_out <- select(older, PRAC1_OP, PRAC2_OP, PRAC3_OP)
+
+older_exl_out <- older_exl_out %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+
+oldermsd <- older_exl_out %>% 
+  get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
+
+oldermsd$M_PLUS_3SD <- oldermsd$mean + (3*oldermsd$sd)
+
+
+# Replace the values taken
+
+older <- older %>%
+  mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
+                             ifelse(PRAC1_OP == 5000, 86.898, PRAC1_OP)),
+         PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
+                             ifelse(PRAC2_OP == 5000, 71.314, PRAC2_OP)),
+         PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
+                             ifelse(PRAC3_OP == 5000, 29.254, PRAC3_OP)))
+
+```
+
+### Combine adjusted value dfs
+```{r}
+
+# Combine the age group dfs together
+
+all_ages <- young %>% full_join(middle)
+  
+all_ages <- all_ages %>% full_join(older)
+
+pracs <- all_ages
+
+```
+
+
+## Opinion difference between age groups
+```{r}
+
+# Put data back into long form
+pracs <-  pivot_longer(pracs, cols = c("PRAC1_OP", "PRAC2_OP","PRAC3_OP"), 
+                      names_to = "PRACTICE_TRIAL", values_to = "OPINIONDIFF")
+
+pracs$PRACTICE_TRIAL <- as.factor(pracs$PRACTICE_TRIAL)
+
+levels(pracs$PRACTICE_TRIAL)
+
+# Visualisation of data
+flexplot(OPINIONDIFF~PRACTICE_TRIAL | AGEGROUP, data=pracs) # Looks better
+
+## Analyses
+
+op.aov <- anova_test(
+  data = pracs, dv = OPINIONDIFF, wid = ID,
+  between = AGEGROUP,
+  within = PRACTICE_TRIAL,
+  effect.size = "pes"
+  )
+
+get_anova_table(op.aov)
+
+pracs %>% group_by(PRACTICE_TRIAL) %>% 
+  get_summary_stats(OPINIONDIFF, type = "mean_sd")
+
+ungroup(pracs)
+
+# Pairwise comparisons between practice trials
+
+practrial <- pracs %>%
+  pairwise_t_test(
+    OPINIONDIFF ~ PRACTICE_TRIAL, paired = TRUE,
+    p.adjust.method = "bonferroni"
+    )
+practrial
+
+# Pairwise comparisons between the age groups
+
+pracages <- pracs %>%
+  pairwise_t_test(
+    OPINIONDIFF ~ AGEGROUP, 
+    p.adjust.method = "bonferroni"
+    )
+
+pracages
+
+avg_grp_op <- pracs %>% group_by(AGEGROUP) %>% 
+  get_summary_stats(OPINIONDIFF, type = "mean_sd")
+
+
+## Create descriptives table of opinion differences by age groups
+
+avg_grp_op <- select(avg_grp_op, AGEGROUP, n, mean, sd)
+
+avg_grp_op$AGEGROUP <- recode_factor(avg_grp_op$AGEGROUP,YOUNG = "Young adults", 
+                                     MIDDLE = "Middle-aged adults",
+                                     OLDER = "Older adults")
+
+## change the descriptives df to 2 decimal places
+avg_grp_op$mean <- format(round(avg_grp_op$mean,2))
+avg_grp_op$sd <- format(round(avg_grp_op$sd,2))
+  
+avg_grp_op_table <- flextable(avg_grp_op) 
+
+
+# Make new column names
+avg_grp_op_table <- avg_grp_op_table %>% 
+  
+   set_header_labels(         # Rename the columns in original header row
+      AGEGROUP = "Age group", 
+      n = "N",                  
+      mean = "M",
+      sd = "SD")
+
+
+
+
+avg_grp_op_table <- align(avg_grp_op_table, align = "center", j = 2:4,
+                          part = "all")
+
+avg_grp_op_table %>% autofit() # Auto fits the columns
+
+save_as_docx("age group averages" = avg_grp_op_table, path = "file.docx")
+
+```
+
+
+# Check age group differences
+## Depressive symptom score
+```{r}
+
+levels(full_ja_df$AGEGROUP)
+
+ungroup(full_ja_df)
+
+dep_diff <- full_ja_df %>%
+  anova_test(DASS~AGEGROUP)
+
+dep_diff
+
+full_ja_df %>% tukey_hsd(DASS~AGEGROUP)
+
+dep_diff_lm <- lm(DASS~AGEGROUP, data = full_ja_df)
+
+summary(dep_diff_lm) # Less depressive symptoms for older adults
+
+```
+
+## Pre-Confidence
+```{r}
+
+pre_conf_diff <- full_ja_df %>%
+  anova_test(PRE_CONFIDENCEn~AGEGROUP)
+
+pre_conf_diff
+
+pre_conf_diff_lm <- lm(PRE_CONFIDENCEn~AGEGROUP, data = full_ja_df)
+
+summary(pre_conf_diff_lm) # No differences
+
+```
+
+
+## Post-Confidence
+```{r}
+
+post_conf_diff <- full_ja_df %>%
+  anova_test(POST_CONFIDENCEn~AGEGROUP)
+
+post_conf_diff
+
+post_conf_diff_lm <- lm(POST_CONFIDENCEn~AGEGROUP, data = full_ja_df)
+
+summary(post_conf_diff_lm) # Difference between young and older - older less confident
+
+estimates(post_conf_diff_lm)
+
+```
+
+
+## Perceived Advice Accuracy
+```{r}
+
+advice_acc_diff <- full_ja_df %>%
+  anova_test(PERCEIVED_ADVICE_ACCURACYn~AGEGROUP)
+
+advice_acc_diff
+
+advice_acc_diff_lm <- lm(PERCEIVED_ADVICE_ACCURACYn~AGEGROUP, data = full_ja_df)
+
+summary(advice_acc_diff_lm) # Difference between young and older - perceive the advice as less accurate
+
+estimates(advice_acc_diff_lm)
+
+```
+
+
+## Average Fluid IQ
+```{r}
+
+fluidiq_diff <- full_ja_df %>%
+  anova_test(AVFLUIDIQ~AGEGROUP)
+
+fluidiq_diff
+
+fluidiq_diff_lm <- lm(AVFLUIDIQ~AGEGROUP, data = full_ja_df)
+
+summary(fluidiq_diff_lm) # No difference
+
+visualize(fluidiq_diff_lm)
+
+```
+
+
+# Mixed Model Analyses
+## Hypothesis 1: With increasing age, and increasing depressive symptoms, 
+there would be greater advice-taking.
+```{r}
+
+# Get dataframe ready
+
+ja_df1 <- full_ja_df
+
+ja_df1 <- pivot_longer(ja_df1, cols = c("JAR01_WOA":"JAR12_WOA"), 
+                       names_to = "JAR", values_to = "WOA")
+
+ja_df1$JAR <- as.factor(ja_df1$JAR)
+
+ja_df1$ID <- as.factor(ja_df1$ID)
+
+## Center age
+
+ja_df1 <- ja_df1 %>% mutate(GMC_AGE = scale(AGEn, scale = FALSE))
+
+## Center DASS
+
+ja_df1 <- ja_df1 %>% mutate(GMC_DASS = scale(DASS, scale = FALSE))
+
+## Basic LMM model
+
+model1 <- lmer(WOA~1 + (1|ID), data = ja_df1)
+
+summary(model1)
+
+## Add jar as random effect
+
+model1.2 <- lmer(WOA~1 + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model1.2)
+
+anova(model1,model1.2) # Retain model1.2 as baseline
+
+## Add age as fixed effect
+
+model2 <- lmer(WOA~GMC_AGE + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model2)
+
+
+
+```
+
+### Check assumptions
+```{r}
+
+#2.1 Linearity of relationships 
+linearity_model2 <- plot_model(model2, type = "resid",  show.data = TRUE) 
+linearity_model2
+
+#2.3 Normality of residuals
+#FOR BOTH 2.2 and 2.3, we're going to use this command from sjPlot (as well as for some of our "other checks" in 2.5)
+#sjPlot has a suite of other diagnostic plots for each model - let's run these plots (type = "diag") and save them to a new object
+#you'll get a list of plots in one object from this command - we'll pull them in step-by-step
+model2_diagnostics <- visualize(model2, plot = "residuals")
+model2_diagnostics
+## Seem to have two clumps?
+
+tab_model(model2)
+```
+
+
+### Table of model2
+```{r}
+
+tab_model(model2, #for model 2
+          show.re.var = FALSE, #don't show random effects variances (not typically reported in papers)
+          show.icc = FALSE, #don't show ICCs 
+          show.se = TRUE, #show standard errors
+          show.r2 = FALSE, #sjPlot calculates a psuedo-R2 variable that indicates the variance explained by the model 
+          #it uses the logic in this paper: https://royalsocietypublishing.org/doi/10.1098/rsif.2017.0213
+          #R2 is controversial for multilevel models and this is not my preferred method of computing it - so I will omit it here
+          #If you do want to include a measure of variance explained, I recommend the package R2mlm, which uses the methods from Rights & Sterba, 2019 
+          #(https://psycnet.apa.org/doiLanding?doi=10.1037%2Fmet0000184)
+          show.ci = 0.95, #I'm printing the 95% confidence intervals
+          string.ci = "95% CI", #and labelling that column "95% CI"
+          p.val = "satterthwaite", #I'm asking it to calculate p-values using the satterthwaite approximation (same thing lmerTest does)
+          collapse.se = TRUE,  #I'm asking for the SE to be collapsed into the same column as the estimate and in brackets (typical APA format)
+          string.est = "Estimate (SE)", #and for that column to be called "Estimate (SE)"
+          pred.labels = c("Intercept","Age"), #now I'm giving it what I want my predictor variables to be labelled in the order that they
+          #appear in the model output (check your output from summary above if you're not sure)
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model2.html") #what I'd like to save my file as - if you don't want to save yet, don't include this
+
+```
+
+
+## Add DASS
+```{r}
+
+## Add DASS as fixed effect
+
+model3 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model3)
+
+model3.5 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model3.5)
+
+
+```
+
+```{r}
+
+ja_df1$EMO_REGn <- as.factor(ja_df1$EMO_REGn)
+
+ja_df2 <- ja_df1 %>% 
+  rowwise() %>% 
+  mutate(EMO_REGULATOR = ifelse(is.na(EMO_REG_EFFORT1n) & is.na(EMO_REG_EFFORT2n),
+                                                            "NO", "YES"))
+
+
+```
+
+
+
+```{r}
+
+model4 <- lm(WOA~GMC_AGE + EMO_REGULATOR, data = ja_df2)
+
+summary(model4)
+
+model5 <- lm(WOA~GMC_AGE*EMO_REGULATOR, data = ja_df2)
+
+summary(model5)
+
+ja_df2 %>% group_split(EMO_REGULATOR)
+
+```
+

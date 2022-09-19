@@ -9,26 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
 
 # Packages
 
@@ -45,6 +25,8 @@ library(janitor) # To clean up names in data
 library(dlookr) # To use the diagnostics on numeric variables
 
 library(rstatix) # For get_summary_stats functions and basic analyses like ANOVA etc
+
+library(psych) # To check reliability
 
 ```
 
@@ -188,60 +170,97 @@ tidydf5 <- tidydf4[!(row.names(tidydf4) %in% c('15','17', '33', '44', '46', '54'
 
 structure(tidydf5)
 
-## Remove trials where first estimate matches the advice
+```
+
+# Remove trials where first estimate matches the advice
+```{r}
+
+## Get total numbers estimates (1st and 2nd round) for practice, and then proper.
+
+prac_total <- tidydf5 %>% 
+  get_summary_stats(PRAC1_1n, PRAC1_2n, PRAC1_3n, PRAC2_1n, PRAC2_2n,
+                    PRAC2_3n, type = "common")
+
+sum(prac_total$n) # 936
 
 ## Try on practice trials first ##
 
 ### Need to ensure that as.integer(NA) is specified! Otherwise, get errors about compatibility of vectors.
 
 df6 <- tidydf5 %>% 
-  rowwise(PRAC1_1n) %>% mutate(PRAC1_1n = ifelse(PRAC1_1n == prac2_1_advicen, as.integer(NA),PRAC1_1n))
+  rowwise(PRAC1_1n) %>% mutate(PRAC1_1n = ifelse(PRAC1_1n == prac2_1_advicen, as.integer(NA),PRAC1_1n)) %>% 
+  rowwise(PRAC2_1n) %>% mutate(PRAC2_1n = ifelse(PRAC1_1n == prac2_1_advicen, as.integer(NA),PRAC2_1n))
   
 df6 <- df6 %>%   
-  rowwise(PRAC1_2n) %>% mutate(PRAC1_2n = ifelse(PRAC1_2n == prac2_2_advicen, as.integer(NA),PRAC1_2n))
+  rowwise(PRAC1_2n) %>% mutate(PRAC1_2n = ifelse(PRAC1_2n == prac2_2_advicen, as.integer(NA),PRAC1_2n)) %>% 
+  rowwise(PRAC2_2n) %>% mutate(PRAC2_2n = ifelse(PRAC1_2n == prac2_2_advicen, as.integer(NA),PRAC2_2n))
 
 df6 <- df6 %>% 
-  rowwise(PRAC1_3n) %>% mutate(PRAC1_3n = ifelse(PRAC1_3n == prac2_3_advicen,as.integer(NA),PRAC1_3n)) 
+  rowwise(PRAC1_3n) %>% mutate(PRAC1_3n = ifelse(PRAC1_3n == prac2_3_advicen,as.integer(NA),PRAC1_3n)) %>% 
+  rowwise(PRAC2_3n) %>% mutate(PRAC2_3n = ifelse(PRAC1_3n == prac2_3_advicen,as.integer(NA),PRAC2_3n))
 
-# None came up
 
-## Try removing actual trials...
+## Remove actual trials - take out both estimates if first estimate matches advice
 
-df6 <- df6 %>% 
-  rowwise(ESTTASK1_1n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_1n))
+## Get totals
 
-df6 <- df6 %>% 
-  rowwise(ESTTASK1_2n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK1_2n)) 
+esttask_total <- tidydf5 %>% 
+  get_summary_stats(ESTTASK1_1n, ESTTASK1_2n, ESTTASK1_3n, ESTTASK1_4n,
+                    ESTTASK1_5n, ESTTASK1_6n, ESTTASK1_7n, ESTTASK1_8n,
+                    ESTTASK1_9n, ESTTASK1_10n, ESTTASK1_11n, ESTTASK1_12n,
+                    ESTTASK2_1n, ESTTASK2_2n, ESTTASK2_3n, ESTTASK2_4n,
+                    ESTTASK2_5n, ESTTASK2_6n, ESTTASK2_7n, ESTTASK2_8n,
+                    ESTTASK2_9n, ESTTASK2_10n, ESTTASK2_11n, ESTTASK2_12n, type = "common")
 
-df6 <- df6 %>% 
-  rowwise(ESTTASK1_3n) %>% mutate(ESTTASK1_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK1_3n)) 
-
-df6 <- df6 %>% 
-  rowwise(ESTTASK1_4n) %>% mutate(ESTTASK1_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK1_4n)) 
-
-df6 <- df6 %>% 
-  rowwise(ESTTASK1_5n) %>% mutate(ESTTASK1_5n = ifelse(ESTTASK1_5n == est2_5_advicen,as.integer(NA),ESTTASK1_5n)) 
+sum(esttask_total$n) # 3744
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_6n) %>% mutate(ESTTASK1_6n = ifelse(ESTTASK1_6n == est2_6_advicen,as.integer(NA),ESTTASK1_6n)) 
+  rowwise(ESTTASK1_1n) %>% mutate(ESTTASK1_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_1n)) %>%
+  rowwise(ESTTASK2_1n) %>% mutate(ESTTASK2_1n = ifelse(ESTTASK1_1n == est2_1_advicen,as.integer(NA),ESTTASK1_2n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_7n) %>% mutate(ESTTASK1_7n = ifelse(ESTTASK1_7n == est2_7_advicen,as.integer(NA),ESTTASK1_7n)) 
+  rowwise(ESTTASK1_2n) %>% mutate(ESTTASK1_2n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK1_2n)) %>% 
+  rowwise(ESTTASK2_2n) %>% mutate(ESTTASK2_2n = ifelse(ESTTASK1_2n == est2_2_advicen,as.integer(NA),ESTTASK2_2n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_8n) %>% mutate(ESTTASK1_8n = ifelse(ESTTASK1_8n == est2_8_advicen,as.integer(NA),ESTTASK1_8n)) 
+  rowwise(ESTTASK1_3n) %>% mutate(ESTTASK1_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK1_3n)) %>% 
+  rowwise(ESTTASK2_3n) %>% mutate(ESTTASK2_3n = ifelse(ESTTASK1_3n == est2_3_advicen,as.integer(NA),ESTTASK2_3n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_9n) %>% mutate(ESTTASK1_9n = ifelse(ESTTASK1_9n == est2_9_advicen,as.integer(NA),ESTTASK1_9n)) 
+  rowwise(ESTTASK1_4n) %>% mutate(ESTTASK1_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK1_4n)) %>% 
+  rowwise(ESTTASK2_4n) %>% mutate(ESTTASK2_4n = ifelse(ESTTASK1_4n == est2_4_advicen,as.integer(NA),ESTTASK2_4n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_10n) %>% mutate(ESTTASK1_10n = ifelse(ESTTASK1_10n == est2_10_advicen,as.integer(NA),ESTTASK1_10n)) 
+  rowwise(ESTTASK1_5n) %>% mutate(ESTTASK1_5n = ifelse(ESTTASK1_5n == est2_5_advicen,as.integer(NA),ESTTASK1_5n)) %>% 
+  rowwise(ESTTASK2_5n) %>% mutate(ESTTASK2_5n = ifelse(ESTTASK1_5n == est2_5_advicen,as.integer(NA),ESTTASK2_5n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_11n) %>% mutate(ESTTASK1_11n = ifelse(ESTTASK1_11n == est2_11_advicen,as.integer(NA),ESTTASK1_11n)) 
+  rowwise(ESTTASK1_6n) %>% mutate(ESTTASK1_6n = ifelse(ESTTASK1_6n == est2_6_advicen,as.integer(NA),ESTTASK1_6n)) %>% 
+  rowwise(ESTTASK2_6n) %>% mutate(ESTTASK2_6n = ifelse(ESTTASK1_6n == est2_6_advicen,as.integer(NA),ESTTASK2_6n))
 
 df6 <- df6 %>% 
-  rowwise(ESTTASK1_12n) %>% mutate(ESTTASK1_12n = ifelse(ESTTASK1_12n == est2_12_advicen,as.integer(NA),ESTTASK1_12n)) 
+  rowwise(ESTTASK1_7n) %>% mutate(ESTTASK1_7n = ifelse(ESTTASK1_7n == est2_7_advicen,as.integer(NA),ESTTASK1_7n)) %>% 
+  rowwise(ESTTASK2_7n) %>% mutate(ESTTASK2_7n = ifelse(ESTTASK1_7n == est2_7_advicen,as.integer(NA),ESTTASK2_7n))
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_8n) %>% mutate(ESTTASK1_8n = ifelse(ESTTASK1_8n == est2_8_advicen,as.integer(NA),ESTTASK1_8n)) %>% 
+  rowwise(ESTTASK2_8n) %>% mutate(ESTTASK2_8n = ifelse(ESTTASK1_8n == est2_8_advicen,as.integer(NA),ESTTASK2_8n))
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_9n) %>% mutate(ESTTASK1_9n = ifelse(ESTTASK1_9n == est2_9_advicen,as.integer(NA),ESTTASK1_9n)) %>% 
+  rowwise(ESTTASK2_9n) %>% mutate(ESTTASK2_9n = ifelse(ESTTASK1_9n == est2_9_advicen,as.integer(NA),ESTTASK2_9n))
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_10n) %>% mutate(ESTTASK1_10n = ifelse(ESTTASK1_10n == est2_10_advicen,as.integer(NA),ESTTASK1_10n)) %>% 
+  rowwise(ESTTASK2_10n) %>% mutate(ESTTASK2_10n = ifelse(ESTTASK1_10n == est2_10_advicen,as.integer(NA),ESTTASK2_10n))
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_11n) %>% mutate(ESTTASK1_11n = ifelse(ESTTASK1_11n == est2_11_advicen,as.integer(NA),ESTTASK1_11n)) %>% 
+  rowwise(ESTTASK2_11n) %>% mutate(ESTTASK2_11n = ifelse(ESTTASK1_11n == est2_11_advicen,as.integer(NA),ESTTASK2_11n))
+
+df6 <- df6 %>% 
+  rowwise(ESTTASK1_12n) %>% mutate(ESTTASK1_12n = ifelse(ESTTASK1_12n == est2_12_advicen,as.integer(NA),ESTTASK1_12n)) %>% 
+  rowwise(ESTTASK2_12n) %>% mutate(ESTTASK2_12n = ifelse(ESTTASK1_12n == est2_12_advicen,as.integer(NA),ESTTASK2_12n))
 
 
 ### Add column with age group
@@ -262,31 +281,51 @@ nacount1 <- df6 %>%
   group_by(AGEGROUP) %>%  
   select(AGEGROUP, ESTTASK1_1n, ESTTASK1_2n, ESTTASK1_3n, ESTTASK1_4n, 
          ESTTASK1_5n, ESTTASK1_6n, ESTTASK1_7n, ESTTASK1_8n, ESTTASK1_9n, 
-         ESTTASK1_10n, ESTTASK1_11n, ESTTASK1_12n) %>% # replace to your needs
+         ESTTASK1_10n, ESTTASK1_11n, ESTTASK1_12n, ESTTASK2_1n, ESTTASK2_2n,
+         ESTTASK2_3n, ESTTASK2_4n, ESTTASK2_5n, ESTTASK2_6n, ESTTASK2_7n,
+         ESTTASK2_8n, ESTTASK2_9n, ESTTASK2_10n, ESTTASK2_11n, ESTTASK2_12n) %>% # replace to your needs
   summarise_all(funs(sum(is.na(.))))
 
-# 1 for young
-# 4 for middle
-# 3 for older
+# 2 for young
+
+2/3744  # .01% of trials for young
+
+# 8 for middle
+
+8/3744  # .02% of trials for middle
+
+# 6 for older
+
+6/3744  # .02% of trials for older
 
 # Practice
 nacount1_prac <- df6 %>%
   group_by(AGEGROUP) %>%  
-  select(AGEGROUP, PRAC1_1n, PRAC1_2n, PRAC1_3n) %>% # replace to your needs
+  select(AGEGROUP, PRAC1_1n, PRAC1_2n, PRAC1_3n,
+         PRAC2_1n, PRAC2_2n, PRAC2_3n) %>% # replace to your needs
   summarise_all(funs(sum(is.na(.))))
 
-# 1 for young
-# 1 for older
+df6 %>% ungroup()
+
+# 2 for young
+
+2/936 # .02%
+
+# 2 for older
+
+2 / 936 # .02%
+
 
 ```
 
 
-# Create WoAs for each jar ###########################
+
+# Create WoAs for each jar
 ```{r}
 
 ## Make WOA values for each jar for each person.
 
-df6$PRAC01_WOA <- (df6$PRAC2_1n-df6$PRAC1_1n)/(df6$prac2_1_advicen-df6$PRAC1_1n)
+df6$PRAC01_WOA <- (df6$PRAC2_1n-df6$PRAC1_1n)/(df6$prac2_1_advicen-df6$PRAC1_1n) 
 
 df6$PRAC02_WOA <- (df6$PRAC2_2n-df6$PRAC1_2n)/(df6$prac2_2_advicen-df6$PRAC1_2n)
 
@@ -322,6 +361,15 @@ df6$JAR12_WOA <- (df6$ESTTASK2_12n-df6$ESTTASK1_12n)/(df6$est2_12_advicen-df6$ES
 
 # Create depression symptom severity scores
 ```{r}
+
+# Check reliability of DASS
+
+df6 <- ungroup(df6)
+
+baseline_DASS_rel <- df6 %>% select(DASS3n, DASS5n, DASS10n, DASS13n, DASS16n, DASS17n, DASS21n)
+
+alpha(baseline_DASS_rel) # raw_alpha: Cronbach’s α (values ≥ .7 or .8 indicate 
+# good reliability; Kline (1999)) - all are > .8
 
 df7 <- df6 %>%
   rowwise() %>%
@@ -369,6 +417,14 @@ df7 <- df7 %>%
 
 # Remove WOA values smaller than -1.3 or larger than 1.3
 ```{r}
+# Get total count of WOA values
+
+countwoa <- df6 %>% 
+  get_summary_stats(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA, JAR05_WOA,
+                    JAR06_WOA, JAR07_WOA, JAR08_WOA, JAR09_WOA, JAR10_WOA,
+                    JAR11_WOA, JAR12_WOA, type = "common")
+
+sum(countwoa$n) # 1864
 
 ## Remove from practice trials
 
@@ -439,7 +495,11 @@ sum(nacount2young$JAR01_WOA, nacount2young$JAR02_WOA, nacount2young$JAR03_WOA, n
       nacount2young$JAR05_WOA, nacount2young$JAR06_WOA, nacount2young$JAR07_WOA, nacount2young$JAR08_WOA, 
       nacount2young$JAR09_WOA, nacount2young$JAR10_WOA, nacount2young$JAR11_WOA, nacount2young$JAR12_WOA)
 
-# 43 NA for young
+# 55 NA for young (-1 people that would be NA due to being advice match removals)
+
+55-1 
+
+54/1864 # 3% for young
 
 nacount2midd <- subset(nacount2, AGEGROUP=="MIDDLE")
 
@@ -447,7 +507,11 @@ sum(nacount2midd$JAR01_WOA, nacount2midd$JAR02_WOA, nacount2midd$JAR03_WOA, naco
       nacount2midd$JAR05_WOA, nacount2midd$JAR06_WOA, nacount2midd$JAR07_WOA, nacount2midd$JAR08_WOA, 
       nacount2midd$JAR09_WOA, nacount2midd$JAR10_WOA, nacount2midd$JAR11_WOA, nacount2midd$JAR12_WOA)
 
-# 42 NA for middle-aged
+# 62 NA for middle-aged (-4 people that were NA due to being advice match removals)
+
+62-4
+
+58/1864 # 3% for middle-aged
 
 nacount2older <- subset(nacount2, AGEGROUP=="OLDER")
 
@@ -455,9 +519,11 @@ sum(nacount2older$JAR01_WOA, nacount2older$JAR02_WOA, nacount2older$JAR03_WOA, n
       nacount2older$JAR05_WOA, nacount2older$JAR06_WOA, nacount2older$JAR07_WOA, nacount2older$JAR08_WOA, 
       nacount2older$JAR09_WOA, nacount2older$JAR10_WOA, nacount2older$JAR11_WOA, nacount2older$JAR12_WOA)
 
-# 35 NA for older
+# 48 NA for older  (-3 people that were NA due to being advice match removals)
 
+48-3
 
+45/1864 # 2% for older adults
 
 ```
 
@@ -861,9 +927,9 @@ young %>% ungroup()
 
 young <- young %>%
   mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA > 2.055, 100, JAR01_WOA)),
+                             ifelse(JAR01_WOA > 0.933, 100, JAR01_WOA)),
          JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA < -0.411, -100, JAR01_WOA))) ## 1 outlier
+                             ifelse(JAR01_WOA < -1.737, -100, JAR01_WOA))) ## 1 outlier
 
 
 ## Get young jar 2 outliers
@@ -888,9 +954,9 @@ young <- young %>%
 
 young <- young %>%
   mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA > 1.800, 100, JAR04_WOA)),
+                             ifelse(JAR04_WOA > 4.585, 100, JAR04_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA < -0.426, -100, JAR04_WOA))) ## 1 outlier
+                             ifelse(JAR04_WOA < -3.485, -100, JAR04_WOA))) ## 1 outlier
 
 
 ## Get young jar 5 outliers
@@ -1025,9 +1091,9 @@ sum(young$JAR01_WOA >= 100|young$JAR01_WOA <= -100|young$JAR02_WOA >= 100|
 
 young <- young %>%
   mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA == 100, 1.741, JAR01_WOA)),
+                             ifelse(JAR01_WOA == 100, 0.617, JAR01_WOA)),
          JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA == -100, -0.011, JAR01_WOA)),
+                             ifelse(JAR01_WOA == -100, -1.519, JAR01_WOA)),
          JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
                              ifelse(JAR02_WOA == 100, 1.836, JAR02_WOA)),
          JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
@@ -1037,9 +1103,9 @@ young <- young %>%
          JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
                              ifelse(JAR03_WOA == -100, -0.527, JAR03_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA == 100, 1.706, JAR04_WOA)),
+                             ifelse(JAR04_WOA == 100, 2.044, JAR04_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA == -100, -0.280, JAR04_WOA)),
+                             ifelse(JAR04_WOA == -100, -0.572, JAR04_WOA)),
          JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
                              ifelse(JAR05_WOA == 100, 1.838, JAR05_WOA)),
          JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
@@ -1084,9 +1150,9 @@ middle %>% ungroup()
 
 middle <- middle %>%
   mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA > 1.477, 100, JAR01_WOA)),
+                             ifelse(JAR01_WOA > 1.067, 100, JAR01_WOA)),
          JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA < 0.361, -100, JAR01_WOA))) ## No outliers
+                             ifelse(JAR01_WOA < -2.329, -100, JAR01_WOA))) ## No outliers
 
 
 ## Get middle jar 2 outliers
@@ -1111,9 +1177,9 @@ middle <- middle %>%
 
 middle <- middle %>%
   mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA > 2.128, 100, JAR04_WOA)),
+                             ifelse(JAR04_WOA > 5.644, 100, JAR04_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA < -0.680, -100, JAR04_WOA))) ## 1 outlier
+                             ifelse(JAR04_WOA < -4.484, -100, JAR04_WOA))) ## 1 outlier
 
 
 ## Get middle jar 5 outliers
@@ -1222,20 +1288,28 @@ middlemsd_jars$M_MINUS_3SD <- middlemsd_jars$mean - (3*middlemsd_jars$sd)
 
 ## Get sum of outliers for young group for jars
 
-sum(middle$JAR01_WOA <= -100|middle$JAR02_WOA <= -100|middle$JAR03_WOA <= -100|
-      middle$JAR04_WOA <= -100|middle$JAR05_WOA <= -100|middle$JAR06_WOA <= -100|
-      middle$JAR07_WOA <= -100|middle$JAR08_WOA <= -100|middle$JAR09_WOA <= -100|
-      middle$JAR10_WOA <= -100|middle$JAR11_WOA <= -100|middle$JAR12_WOA <= -100, na.rm=TRUE)
+sum(middle$JAR01_WOA <= -100|middle$JAR01_WOA >= 100| 
+      middle$JAR02_WOA <= -100|middle$JAR02_WOA >= 100|
+      middle$JAR03_WOA <= -100|middle$JAR03_WOA >= 100|
+      middle$JAR04_WOA <= -100|middle$JAR04_WOA >= 100|
+      middle$JAR05_WOA <= -100|middle$JAR05_WOA >= 100|
+      middle$JAR06_WOA <= -100|middle$JAR06_WOA >= 100|
+      middle$JAR07_WOA <= -100|middle$JAR07_WOA >= 100|
+      middle$JAR08_WOA <= -100|middle$JAR08_WOA >= 100|
+      middle$JAR09_WOA <= -100|middle$JAR09_WOA >= 100|
+      middle$JAR10_WOA <= -100|middle$JAR10_WOA >= 100|
+      middle$JAR11_WOA <= -100|middle$JAR11_WOA >= 100|
+      middle$JAR12_WOA <= -100,middle$JAR12_WOA >= 100, na.rm=TRUE)
 
-## It says 5 but I thought there were 6...?
+## It says 4 but I thought there were 6...? Need to investigate what is going wrong.
 
 # Replace the values taken
 
 middle <- middle %>%
   mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA == 100, 1.477, JAR01_WOA)),
+                             ifelse(JAR01_WOA == 100, 1.067, JAR01_WOA)),
          JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA == -100, 0.361, JAR01_WOA)),
+                             ifelse(JAR01_WOA == -100, -2.329, JAR01_WOA)),
          JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
                              ifelse(JAR02_WOA == 100, 1.905, JAR02_WOA)),
          JAR02_WOA = ifelse(is.na(JAR02_WOA), NA,
@@ -1245,9 +1319,9 @@ middle <- middle %>%
          JAR03_WOA = ifelse(is.na(JAR03_WOA), NA,
                              ifelse(JAR03_WOA == -100, -0.330, JAR03_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA == 100, 1.901, JAR04_WOA)),
+                             ifelse(JAR04_WOA == 100, 2.377, JAR04_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA == -100, -0.373, JAR04_WOA)),
+                             ifelse(JAR04_WOA == -100, -0.779, JAR04_WOA)),
          JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
                              ifelse(JAR05_WOA == 100, 1.994, JAR05_WOA)),
          JAR05_WOA = ifelse(is.na(JAR05_WOA), NA,
@@ -1277,7 +1351,7 @@ middle <- middle %>%
          JAR11_WOA = ifelse(is.na(JAR11_WOA), NA,
                              ifelse(JAR11_WOA == -100, -0.358, JAR11_WOA)),
          JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
-                             ifelse(JAR12_WOA == 100, 1.862, JAR12_WOA)),
+                             ifelse(JAR12_WOA == 100, 1.892, JAR12_WOA)),
          JAR12_WOA = ifelse(is.na(JAR12_WOA), NA,
                              ifelse(JAR12_WOA == -100, -0.406, JAR12_WOA)))
 
@@ -1293,9 +1367,9 @@ older %>% ungroup()
 
 older <- older %>%
   mutate(JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA > 1.528, 100, JAR01_WOA)),
+                             ifelse(JAR01_WOA > 0.448, 100, JAR01_WOA)),
          JAR01_WOA = ifelse(is.na(JAR01_WOA), NA,
-                             ifelse(JAR01_WOA < 0.226, -100, JAR01_WOA))) ## No outliers
+                             ifelse(JAR01_WOA < -1.670, -100, JAR01_WOA))) ## No outliers
 
 ## Get older jar 2 outliers
 
@@ -1317,9 +1391,9 @@ older <- older %>%
 
 older <- older %>%
   mutate(JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA > 1.811, 100, JAR04_WOA)),
+                             ifelse(JAR04_WOA > 1.855, 100, JAR04_WOA)),
          JAR04_WOA = ifelse(is.na(JAR04_WOA), NA,
-                             ifelse(JAR04_WOA < -0.487, -100, JAR04_WOA))) ## No outliers
+                             ifelse(JAR04_WOA < -0.503, -100, JAR04_WOA))) ## No outliers
 
 ## Get older jar 5 outliers
 
@@ -1458,7 +1532,8 @@ older <- older %>%
 young %>% ungroup()
 
 youngmsd_Qs <- young %>% 
-  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+  get_summary_stats(DASS, AVFLUIDIQ, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                    PERCEIVED_ADVICE_ACCURACYn, type = "mean_sd")
 
 ## Get mean + 3*SDs and mean - 3*SDs
 
@@ -1479,6 +1554,23 @@ young <- young %>%
   mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 10.215, 100, AVFLUIDIQ),
          AVFLUIDIQ = ifelse(AVFLUIDIQ < -2.193, -100, AVFLUIDIQ)) ## No outliers
 
+## Identify outliers for PRE_CONFIDENCE
+
+young <- young %>%
+  mutate(PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn > 6.329, 100, PRE_CONFIDENCEn),
+         PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn < -0.457, -100, PRE_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for POST_CONFIDENCE
+
+young <- young %>%
+  mutate(POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn > 6.579, 100, POST_CONFIDENCEn),
+         POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn < -0.153, -100, POST_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for perceived advice accuracy
+
+young <- young %>%
+  mutate(PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn > 5.878, 100, PERCEIVED_ADVICE_ACCURACYn),
+         PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn < 1.228, -100, PERCEIVED_ADVICE_ACCURACYn)) ## No outliers
 
 ## Middle
 ## Get Ms and SDs
@@ -1486,7 +1578,8 @@ young <- young %>%
 middle %>% ungroup()
 
 middlemsd_Qs <- middle %>% 
-  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+  get_summary_stats(DASS, AVFLUIDIQ, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                    PERCEIVED_ADVICE_ACCURACYn, type = "mean_sd")
 
 ## Get mean + 3*SDs and mean - 3*SDs
 
@@ -1506,6 +1599,24 @@ middle <- middle %>%
   mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 9.404, 100, AVFLUIDIQ),
          AVFLUIDIQ = ifelse(AVFLUIDIQ < -1.126, -100, AVFLUIDIQ)) ## No outliers
 
+## Identify outliers for PRE_CONFIDENCE
+
+middle <- middle %>%
+  mutate(PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn > 5.730, 100, PRE_CONFIDENCEn),
+         PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn < -0.174, -100, PRE_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for POST_CONFIDENCE
+
+middle <- middle %>%
+  mutate(POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn > 6.285, 100, POST_CONFIDENCEn),
+         POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn < -0.063, -100, POST_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for perceived advice accuracy
+
+middle <- middle %>%
+  mutate(PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn > 6.363, 100, PERCEIVED_ADVICE_ACCURACYn),
+         PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn < 0.045, -100, PERCEIVED_ADVICE_ACCURACYn)) ## No outliers
+
 
 ## Older
 ## Get Ms and SDs
@@ -1513,7 +1624,8 @@ middle <- middle %>%
 older %>% ungroup()
 
 oldermsd_Qs <- older %>% 
-  get_summary_stats(DASS, AVFLUIDIQ, type = "mean_sd")
+  get_summary_stats(DASS, AVFLUIDIQ, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                    PERCEIVED_ADVICE_ACCURACYn, type = "mean_sd")
 
 ## Get mean + 3*SDs and mean - 3*SDs
 
@@ -1551,7 +1663,147 @@ older <- older %>%
   mutate(AVFLUIDIQ = ifelse(AVFLUIDIQ > 8.674, 100, AVFLUIDIQ),
          AVFLUIDIQ = ifelse(AVFLUIDIQ < -0.674, -100, AVFLUIDIQ)) ## No outliers
 
+## Identify outliers for PRE_CONFIDENCE
+
+older <- older %>%
+  mutate(PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn > 5.507, 100, PRE_CONFIDENCEn),
+         PRE_CONFIDENCEn = ifelse(PRE_CONFIDENCEn < -0.343, -100, PRE_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for POST_CONFIDENCE
+
+older <- older %>%
+  mutate(POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn > 5.898, 100, POST_CONFIDENCEn),
+         POST_CONFIDENCEn = ifelse(POST_CONFIDENCEn < -0.516, -100, POST_CONFIDENCEn)) ## No outliers
+
+## Identify outliers for perceived advice accuracy
+
+older <- older %>%
+  mutate(PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn > 5.767, 100, PERCEIVED_ADVICE_ACCURACYn),
+         PERCEIVED_ADVICE_ACCURACYn = ifelse(PERCEIVED_ADVICE_ACCURACYn < -0.131, -100, PERCEIVED_ADVICE_ACCURACYn)) ## No outliers
+
 ```
+
+
+# Averages and Centering
+
+```{r}
+## Create average time for each P in practice sessions
+
+## 1st Prac session
+
+df7 <- df7 %>% 
+  rowwise %>%
+  mutate(AVG_TIME_PRAC_1 = mean(c(TIME_P1_1n, TIME_P1_2n, TIME_P1_3n)))
+
+## 2nd Prac session
+
+df7 <- df7 %>% 
+  rowwise %>%
+  mutate(AVG_TIME_PRAC_2 = mean(c(TIME_P2_1n, TIME_P2_2n, TIME_P2_3n)))
+
+## Create average time for each P in 1st estimate trials
+
+df8 <- df7 %>% 
+  rowwise %>% 
+  mutate(AVG_TIME_EST_1 = mean(c(TIME_ET1_1n, TIME_ET1_2n, TIME_ET1_3n, TIME_ET1_4n,
+                      TIME_ET1_5n, TIME_ET1_6n, TIME_ET1_7n, TIME_ET1_8n,
+                      TIME_ET1_9n, TIME_ET1_10n, TIME_ET1_11n, TIME_ET1_12n)))
+
+df8 <- df8 %>% 
+  rowwise %>% 
+  mutate(AVG_TIME_EST_2 = mean(c(TIME_ET2_1n, TIME_ET2_2n, TIME_ET2_3n, TIME_ET2_4n,
+                      TIME_ET2_5n, TIME_ET2_6n, TIME_ET2_7n, TIME_ET2_8n,
+                      TIME_ET2_9n, TIME_ET2_10n, TIME_ET2_11n, TIME_ET2_12n)))
+
+ungroup(df8)
+
+## Grand Mean Center Age
+
+df8 <- df8 %>% mutate(GMC_AGE = scale(AGEn, center = TRUE, scale = FALSE))
+  
+## Grand Mean Center Education
+
+df9 <- df9 %>% mutate(GMC_EDU = scale(EDUn, scale = FALSE))
+
+## Grand Mean Center HEALTH
+
+df9 <- df9 %>% mutate(GMC_HEALTH = scale(CURRENT_HEALTHn, scale = FALSE))
+
+## Grand Mean Center AVG_TIME_PRAC_1
+
+df9 <- df9 %>% mutate(GMC_TIME_PRAC_1 = scale(AVG_TIME_PRAC_1, scale = FALSE))
+
+## Grand Mean Center AVG_TIME_PRAC_2
+
+df9 <- df9 %>% mutate(GMC_TIME_PRAC_2 = scale(AVG_TIME_PRAC_2, scale = FALSE))
+
+## Grand Mean Center AVG_TIME_EST_1
+
+df9 <- df9 %>% mutate(GMC_TIME_EST_1 = scale(AVG_TIME_EST_1, scale = FALSE))
+
+## Grand Mean Center AVG_TIME_EST_2
+
+df9 <- df9 %>% mutate(GMC_TIME_EST_2 = scale(AVG_TIME_EST_2, scale = FALSE))
+
+## Grand Mean Center pre and post confidence, emotions, etc
+
+df9 <- df9 %>% 
+  mutate(GMC_PRE_CONF = scale(PRE_CONFIDENCEn, scale = FALSE),
+         GMC_EMO_EFFORT_1 = scale(EMO_REG_EFFORT1n, scale = FALSE),
+         GMC_EMO_EFFORT_2 = scale(EMO_REG_EFFORT2n, scale = FALSE),
+         GMC_POST_CONF = scale(POST_CONFIDENCEn, scale = FALSE),
+         GMC_ADVICE_ACC = scale(PERCEIVED_ADVICE_ACCURACYn, scale = FALSE))
+         
+
+```
+
+
+# Pull dataframes together
+```{r}
+
+
+youngdf <- select(young, ID, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, JAR01_WOA, JAR02_WOA,
+                  JAR03_WOA, JAR04_WOA, JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                  JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, DASS, DASS_SEVERITY,
+                  AVFLUIDIQ)
+
+middledf <- select(middle, ID, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, JAR01_WOA, JAR02_WOA,
+                  JAR03_WOA, JAR04_WOA, JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                  JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, DASS, DASS_SEVERITY,
+                  AVFLUIDIQ)
+
+olderdf <- select(older, ID, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, JAR01_WOA, JAR02_WOA,
+                  JAR03_WOA, JAR04_WOA, JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                  JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, DASS, DASS_SEVERITY,
+                  AVFLUIDIQ)
+
+
+# Combine the age group dfs together
+
+all_ages <- youngdf %>% full_join(middledf)
+  
+all_ages <- all_ages %>% full_join(olderdf)
+
+# Combine all ages with the ja1
+
+full_ja_df <- ja1 %>% left_join(all_ages)
+
+```
+
+# Save data file
+```{r}
+
+save(full_ja_df, file = "Judge_Advisor_2022_preprocessed.RData")
+
+write.csv(full_ja_df, "JA_2022_Full_Data_preprocessed.csv", row.names = FALSE)
+
+```
+
+
+
+
+
+
 
 
 
