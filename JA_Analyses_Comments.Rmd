@@ -29,6 +29,20 @@ library(sjPlot) #for exporting nice tables of our output
 
 library(flextable) #another package to make apa tables
 
+library(robustlmm) #For robust lmm when normality violated
+
+library(multilevelTools) 
+
+library(JWileymisc) # To use modelDiagnostics
+
+library(ggpubr) # Plotting
+
+library(reghelper)  #for probing interactions
+
+# library(visreg) # Plotting linear regression models
+
+library(emmeans) # to follow up on sig mixed models interactions
+
 ```
 
 
@@ -509,6 +523,7 @@ visualize(fluidiq_diff_lm)
 ```
 
 
+
 # Mixed Model Analyses
 ## Hypothesis 1: With increasing age, and increasing depressive symptoms, 
 there would be greater advice-taking.
@@ -603,45 +618,247 @@ tab_model(model2, #for model 2
 
 ## Add DASS
 ```{r}
-
 ## Add DASS as fixed effect
-
-model3 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
+model3 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model3)
-
-model3.5 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID) + (1|JAR), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
+model3.5 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model3.5)
-
-
 ```
 
+# Create column for emotion regulators
 ```{r}
-
 ja_df1$EMO_REGn <- as.factor(ja_df1$EMO_REGn)
-
 ja_df2 <- ja_df1 %>% 
   rowwise() %>% 
   mutate(EMO_REGULATOR = ifelse(is.na(EMO_REG_EFFORT1n) & is.na(EMO_REG_EFFORT2n),
                                                             "NO", "YES"))
-
-
 ```
 
 
+# LMM with emotion regulators and age
+```{r}
+model4 <- lmer(WOA~GMC_AGE + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model4)
+model5 <- lmer(WOA~GMC_AGE*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model5)
+
+```
+
+## LMM with emotion regulators and DASS
+```{r}
+
+model6 <- lmer(WOA~GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model6)
+
+model7 <- lmer(WOA~GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model7)
+
+anova(model6, model7)
+
+model8 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model8)
+
+# Keep model 8 as it controls for age.
+
+model9 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model9) # Without emotion regulation
+
+summary(model4) # Without DASS
+
+
+summary(model8) ### Significant depressive symptoms and emotion regulation interaction
+
+```
+
+### Plot interaction
 
 ```{r}
 
-model4 <- lm(WOA~GMC_AGE + EMO_REGULATOR, data = ja_df2)
+graph_model(model8, y=WOA, x=GMC_DASS, lines=EMO_REGULATOR)
 
-summary(model4)
-
-model5 <- lm(WOA~GMC_AGE*EMO_REGULATOR, data = ja_df2)
-
-summary(model5)
-
-ja_df2 %>% group_split(EMO_REGULATOR)
 
 ```
+
+### Check assumptions
+```{r}
+#2.1 Linearity of relationships 
+linearity_model8 <- plot_model(model8, type = "resid",  show.data = TRUE) 
+linearity_model8
+#2.3 Normality of residuals
+#FOR BOTH 2.2 and 2.3, we're going to use this command from sjPlot (as well as for some of our "other checks" in 2.5)
+#sjPlot has a suite of other diagnostic plots for each model - let's run these plots (type = "diag") and save them to a new object
+#you'll get a list of plots in one object from this command - we'll pull them in step-by-step
+model8_diagnostics1 <- visualize(model8, plot = "residuals")
+model8_diagnostics1
+
+tab_model(model8)
+
+model8_diagnostics2 <- modelDiagnostics(model8, ev.perc = .001)
+
+plot(model8_diagnostics2, ask = FALSE, ncol = 2, nrow = 3)
+
+```
+
+
+## Robust lmm
+```{r}
+
+model8_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model8_robust)
+
+summary(model8)
+
+```
+
+##### Diagnostics on robust lmm
+```{r}
+plot(model8_robust)
+
+visualize(model8_robust, plot = "residuals")
+
+tab_model(model8_robust)
+
+plot_model(model8_robust, type = "resid",  show.data = TRUE, show.loess = FALSE) 
+
+
+# Use the robust model given normality violations - cite Field & Wilcox 2017
+
+```
+
+
+### Visualisations and report for robust model
+```{r}
+
+## Tab model report
+tab_model(model8_robust,
+          show.re.var = FALSE, 
+          show.icc = FALSE, #don't show ICCs 
+          show.se = TRUE,
+          show.ci = 0.95, 
+          string.ci = "95% CI", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", 
+          pred.labels = c("Intercept","Age", "Depressive Symptom Score", 
+                          "Emotion Regulation Used (Yes)", 
+                          "Depressive Symptom Score*Emotion Regulation Used (Yes)"), 
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model8_Robust.html")
+
+
+## Visualisation of model
+plot_model(model8_robust)
+```
+
+
+### Post hoc on interaction
+```{r}
+
+mod8_emm <- emtrends(model8_robust, var = "GMC_DASS", 
+                     pairwise~GMC_DASS*EMO_REGULATOR)
+
+mod8_emm
+
+
+## Visualisation
+
+# Make apatheme
+
+apatheme=theme_bw()+
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line(),
+        text=element_text(family="Times New Roman"))
+
+plot_model8_int <- plot_model(model8_robust, type = "pred", #can use the same model type as before from sjplot
+                                terms = c("GMC_DASS", "EMO_REGULATOR"), #enter the predictor first
+                                #so it'll appear on the x-axis, and the moderator second as different lines
+                                #I'm asking for just -1SD and + 1SD above the mean of the moderator
+                                #I took the specific numbers from from the output of 
+                                #the sim_slopes command above (just rounding those) 
+                                #if you don't do this, it automatically also includes a line at the mean 
+                                #as well - up to you if you want to do that. 
+                                title = " ", 
+                                axis.title = c("Depressive Symptom Score (grand-mean centered)", "Weight of Advice"), 
+                                legend.title = "Emotion Regulator", #adding a title to the legend
+                                show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
+                                ci.lvl = 0.95) + apatheme
+plot_model8_int 
+
+```
+
+
+# Visualisations
+```{r}
+
+# DASS by WOA
+flexplot(WOA~DASS, data=ja_df2)
+# AGE by WOA
+flexplot(WOA~AGEn, data=ja_df2)
+# AvFluidIQ by WOA
+flexplot(AVFLUIDIQ~WOA, data=ja_df2)
+# Perceived Advice Accuracy by WOA
+flexplot(WOA~PERCEIVED_ADVICE_ACCURACYn, data=ja_df2)
+# Pre confidence by WOA
+flexplot(WOA~PRE_CONFIDENCEn, data=ja_df2)
+# Post confidence by WOA
+flexplot(WOA~POST_CONFIDENCEn, data=ja_df2)
+# Emotion regulation by WOA
+flexplot(WOA~EMO_REGn, data=ja_df2)
+
+
+
+
+```
+
+
+## Split data by emotion regulators
+```{r}
+
+emodf <- select(ja_df2, ID, AGEn, PRE_CONFIDENCEn, EMO_REG_EFFORT1n,
+                EMO_REG_EFFORT2n, POST_CONFIDENCEn, PERCEIVED_ADVICE_ACCURACYn,
+                DASS, JAR, WOA, GMC_AGE, GMC_DASS,EMO_REGULATOR)
+
+emodf <- filter(emodf, EMO_REGULATOR=="YES")
+
+# Rename emotion regulation effort 1 to effort in change
+emodf$EMO_CHNG_EFFORT <- emodf$EMO_REG_EFFORT1n
+
+# Rename emotion regulation effort 2 to effort in acceptance
+emodf$EMO_ACPT_EFFORT <- emodf$EMO_REG_EFFORT2n
+
+# Pivot back wider
+
+emodf <- spread(emodf, JAR, WOA)
+
+# Create Grand Mean Centered 
+
+emodf <- emodf %>% mutate(EMO_CHNG_EFFORT_GMC  = scale(EMO_CHNG_EFFORT, center = TRUE, scale = FALSE))
+
+emodf <- emodf %>% mutate(EMO_ACPT_EFFORT_GMC  = scale(EMO_ACPT_EFFORT, center = TRUE, scale = FALSE))
+
+# Pivot longer for jar and woa
+
+emodf <- pivot_longer(emodf, cols = c(JAR01_WOA:JAR12_WOA), names_to = "JAR", values_to = "WOA")
+
+# Pivot longer for emotion effort by type
+
+emodf <- pivot_longer(emodf, cols = c(EMO_CHNG_EFFORT_GMC, EMO_ACPT_EFFORT_GMC), 
+                      names_to = "EMO_REG_TYPE", values_to = "EMO_EFFORT")
+
+
+```
+
+
+### LMM with Emotion Effort
+```{r}
+
+model10 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model10)
+
+```
+
 
