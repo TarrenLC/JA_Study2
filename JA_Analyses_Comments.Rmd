@@ -976,7 +976,20 @@ emodf <- spread(emodf, REGULATION_TYPE, EMO_EFFORT)
 emodf_cor <- select(emodf, AGEn, DASS, AVFLUIDIQ, EMO_CHNG_EFFORT, 
                     EMO_ACPT_EFFORT, AVG_WOA)
 
+
+# Combine effort into one column
+
+emodf_cor <- emodf_cor %>% 
+  mutate(EMO_EFFORT = ifelse(is.na(EMO_CHNG_EFFORT), EMO_ACPT_EFFORT,
+                             ifelse(is.na(EMO_ACPT_EFFORT), EMO_CHNG_EFFORT)))
+
+
 rcorr(as.matrix(emodf_cor), type = "spearman")
 
 ```
+
+
+
+
+
 
