@@ -43,6 +43,8 @@ library(reghelper)  #for probing interactions
 
 library(emmeans) # to follow up on sig mixed models interactions
 
+library(Hmisc) # Correlation analyses
+
 ```
 
 
@@ -499,7 +501,7 @@ advice_acc_diff
 
 advice_acc_diff_lm <- lm(PERCEIVED_ADVICE_ACCURACYn~AGEGROUP, data = full_ja_df)
 
-summary(advice_acc_diff_lm) # Difference between young and older - perceive the advice as less accurate
+summary(advice_acc_diff_lm) # Difference between young and older - Older perceive the advice as less accurate
 
 estimates(advice_acc_diff_lm)
 
@@ -618,12 +620,52 @@ tab_model(model2, #for model 2
 
 ## Add DASS
 ```{r}
-## Add DASS as fixed effect
+# Add DASS as fixed effect
 model3 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model3)
+
 model3.5 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model3.5)
+
+# Compare main effects and interaction models
+anova(model3, model3.5)
+
+model.comparison(model3, model3.5)
+
 ```
+
+### Tab models
+```{r}
+tab_model(model3, #for model 2
+          show.re.var = TRUE, #don't show random effects variances (not typically reported in papers)
+          show.icc = TRUE, #don't show ICCs 
+          show.se = TRUE, #show standard errors
+          show.ci = 0.95, #I'm printing the 95% confidence intervals
+          string.ci = "95% CI", #and labelling that column "95% CI"
+          p.val = "satterthwaite", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", #and for that column to be called "Estimate (SE)"
+          pred.labels = c("Intercept","Age", "Depressive Symptoms Score"), 
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model3.html") 
+
+tab_model(model3.5, #for model 2
+          show.re.var = TRUE, #don't show random effects variances (not typically reported in papers)
+          show.icc = TRUE, #don't show ICCs 
+          show.se = TRUE, #show standard errors
+          show.ci = 0.95, #I'm printing the 95% confidence intervals
+          string.ci = "95% CI", #and labelling that column "95% CI"
+          p.val = "satterthwaite", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", #and for that column to be called "Estimate (SE)"
+          pred.labels = c("Intercept","Age", "Depressive Symptoms Score",
+                          "Age X Depressive Symptoms Score"), 
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model3.5.html")
+
+```
+
+
 
 # Create column for emotion regulators
 ```{r}
@@ -811,43 +853,88 @@ flexplot(WOA~EMO_REGn, data=ja_df2)
 
 
 ```
+# Correlation
+## Hypothesis 2: Depressive symptoms in older age either associated directly with a decline in cognitive ability, or via increased emotion regulation. 
+###In both cases, reduced cognitive capacity was expected to be associated with increased advice-taking 
 
-
-## Split data by emotion regulators
+### Prepare data for correlations
 ```{r}
-
-emodf <- select(ja_df2, ID, AGEn, PRE_CONFIDENCEn, EMO_REG_EFFORT1n,
-                EMO_REG_EFFORT2n, POST_CONFIDENCEn, PERCEIVED_ADVICE_ACCURACYn,
-                DASS, JAR, WOA, GMC_AGE, GMC_DASS,EMO_REGULATOR)
-
-emodf <- filter(emodf, EMO_REGULATOR=="YES")
-
 # Rename emotion regulation effort 1 to effort in change
-emodf$EMO_CHNG_EFFORT <- emodf$EMO_REG_EFFORT1n
+ja_df2$EMO_CHNG_EFFORT <- ja_df2$EMO_REG_EFFORT1n
 
 # Rename emotion regulation effort 2 to effort in acceptance
-emodf$EMO_ACPT_EFFORT <- emodf$EMO_REG_EFFORT2n
+ja_df2$EMO_ACPT_EFFORT <- ja_df2$EMO_REG_EFFORT2n
 
 # Pivot back wider
 
-emodf <- spread(emodf, JAR, WOA)
+ja_df2 <- spread(ja_df2, JAR, WOA)
 
 # Create Grand Mean Centered 
 
-emodf <- emodf %>% mutate(EMO_CHNG_EFFORT_GMC  = scale(EMO_CHNG_EFFORT, center = TRUE, scale = FALSE))
+ja_df2 <- ja_df2 %>% mutate(EMO_CHNG_EFFORT_GMC  = scale(EMO_CHNG_EFFORT, center = TRUE, scale = FALSE))
 
-emodf <- emodf %>% mutate(EMO_ACPT_EFFORT_GMC  = scale(EMO_ACPT_EFFORT, center = TRUE, scale = FALSE))
+ja_df2 <- ja_df2 %>% mutate(EMO_ACPT_EFFORT_GMC  = scale(EMO_ACPT_EFFORT, center = TRUE, scale = FALSE))
 
-# Pivot longer for jar and woa
+# Make average WOA for each person
 
-emodf <- pivot_longer(emodf, cols = c(JAR01_WOA:JAR12_WOA), names_to = "JAR", values_to = "WOA")
+ja_df3 <- ja_df2 %>% 
+  rowwise() %>% 
+  mutate(AVG_WOA = mean(c(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
+                          JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
+                          JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA), 
+                        na.rm=TRUE))
 
-# Pivot longer for emotion effort by type
+# Select variables for correlation
+
+cor_df <- select(ja_df3, AGEn, AGEGROUP, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT, 
+                 AVFLUIDIQ, AVG_WOA)
+
+# For only older adults
+cor_df_older <- cor_df %>% filter(AGEGROUP == "OLDER")
+
+cor_df_older <- select(cor_df_older, AGEn, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT,
+                       AVFLUIDIQ, AVG_WOA)
+
+# For all
+cor_df <- select(ja_df3, AGEn, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT, 
+                 AVFLUIDIQ, AVG_WOA)
+
+```
+
+
+#### Correlation matrix Older Adults
+```{r}
+
+rcorr(as.matrix(cor_df_older), type = "spearman")
+
+```
+
+#### Correlation matrix for all
+```{r}
+
+rcorr(as.matrix(cor_df), type = "spearman")
+
+```
+
+### Split data by the emotion regulators
+```{r}
+
+# Take to only the emotion regulators
+
+emodf <- ja_df3 %>% filter(EMO_REGULATOR == "YES")
+
+# Pivot data longer by woa and jar
+
+emodf <- pivot_longer(emodf, cols = c(JAR01_WOA:JAR12_WOA), 
+                      names_to = "JAR", values_to = "WOA")
+
+# Pivot data longer by emotion regulation effort and emotion regulation type
 
 emodf <- pivot_longer(emodf, cols = c(EMO_CHNG_EFFORT_GMC, EMO_ACPT_EFFORT_GMC), 
-                      names_to = "EMO_REG_TYPE", values_to = "EMO_EFFORT")
+                      names_to = "REGULATION_TYPE", values_to = "EMO_EFFORT")
 
 
+emodf$REGULATION_TYPE <- as.factor(emodf$REGULATION_TYPE)
 ```
 
 
@@ -859,6 +946,37 @@ model10 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT +
 
 summary(model10)
 
+model11 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model11)
+
+anova(model10, model11)
+
+model12 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_AGE*EMO_EFFORT +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model12)
+
+model13 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_EFFORT +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model13)
+
+
 ```
 
+### Correlation matrix among only emotion regulators
+```{r}
+
+emodf <- spread(emodf, JAR, WOA)
+
+emodf <- spread(emodf, REGULATION_TYPE, EMO_EFFORT)
+
+emodf_cor <- select(emodf, AGEn, DASS, AVFLUIDIQ, EMO_CHNG_EFFORT, 
+                    EMO_ACPT_EFFORT, AVG_WOA)
+
+rcorr(as.matrix(emodf_cor), type = "spearman")
+
+```
 
