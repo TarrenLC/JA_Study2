@@ -689,10 +689,10 @@ summary(model5)
 ## LMM with emotion regulators and DASS
 ```{r}
 
-model6 <- lmer(WOA~GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model6 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model6)
 
-model7 <- lmer(WOA~GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model7 <- lmer(WOA~GMC_DASS + GMC_AGE*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model7)
 
 anova(model6, model7)
@@ -700,10 +700,14 @@ anova(model6, model7)
 model8 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model8)
 
+anova(model6, model8)
+
 # Keep model 8 as it controls for age.
 
-model9 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-summary(model9) # Without emotion regulation
+model9 <- lmer(WOA~GMC_AGE*GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+summary(model9)
+
+anova(model8,model9)
 
 summary(model4) # Without DASS
 
@@ -953,16 +957,30 @@ summary(model11)
 
 anova(model10, model11)
 
-model12 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_AGE*EMO_EFFORT +
+model12 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*REGULATION_TYPE +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model10, model12)
+
+anova(model11, model12) 
 
 summary(model12)
 
-model13 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_EFFORT +
+model13 <- lmer(WOA~GMC_AGE*EMO_EFFORT + GMC_DASS +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 summary(model13)
 
+anova(model10, model13)
+
+model14 <- lmer(WOA~GMC_AGE + EMO_EFFORT*GMC_DASS +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model14)
+
+anova(model10, model14)
+
+# Model 10 fits best. 
 
 ```
 
