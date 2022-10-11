@@ -707,10 +707,13 @@ anova(model6, model8)
 model9 <- lmer(WOA~GMC_AGE*GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 summary(model9)
 
-anova(model8,model9)
+anova(model4,model9)
 
 summary(model4) # Without DASS
 
+model10 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model8, model10)
 
 summary(model8) ### Significant depressive symptoms and emotion regulation interaction
 
@@ -871,17 +874,17 @@ ja_df2$EMO_ACPT_EFFORT <- ja_df2$EMO_REG_EFFORT2n
 
 # Pivot back wider
 
-ja_df2 <- spread(ja_df2, JAR, WOA)
+ja_df3 <- spread(ja_df2, JAR, WOA)
 
 # Create Grand Mean Centered 
 
-ja_df2 <- ja_df2 %>% mutate(EMO_CHNG_EFFORT_GMC  = scale(EMO_CHNG_EFFORT, center = TRUE, scale = FALSE))
+ja_df3 <- ja_df3 %>% mutate(EMO_CHNG_EFFORT_GMC  = scale(EMO_CHNG_EFFORT, center = TRUE, scale = FALSE))
 
-ja_df2 <- ja_df2 %>% mutate(EMO_ACPT_EFFORT_GMC  = scale(EMO_ACPT_EFFORT, center = TRUE, scale = FALSE))
+ja_df3 <- ja_df3 %>% mutate(EMO_ACPT_EFFORT_GMC  = scale(EMO_ACPT_EFFORT, center = TRUE, scale = FALSE))
 
 # Make average WOA for each person
 
-ja_df3 <- ja_df2 %>% 
+ja_df3 <- ja_df3 %>% 
   rowwise() %>% 
   mutate(AVG_WOA = mean(c(JAR01_WOA, JAR02_WOA, JAR03_WOA, JAR04_WOA,
                           JAR05_WOA, JAR06_WOA, JAR07_WOA, JAR08_WOA,
@@ -890,28 +893,34 @@ ja_df3 <- ja_df2 %>%
 
 # Select variables for correlation
 
-cor_df <- select(ja_df3, AGEn, AGEGROUP, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT, 
-                 AVFLUIDIQ, AVG_WOA)
+cor_df <- select(ja_df3, AGEn, DASS, EMO_REGULATOR, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                 PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
 
-# For only older adults
-cor_df_older <- cor_df %>% filter(AGEGROUP == "OLDER")
+# Change factored levels of emotion regulator
 
-cor_df_older <- select(cor_df_older, AGEn, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT,
-                       AVFLUIDIQ, AVG_WOA)
+cor_df$EMO_REGULATOR <- gsub("NO", "0", cor_df$EMO_REGULATOR)
 
-# For all
-cor_df <- select(ja_df3, AGEn, DASS, EMO_CHNG_EFFORT, EMO_ACPT_EFFORT, 
-                 AVFLUIDIQ, AVG_WOA)
+cor_df$EMO_REGULATOR <- gsub("YES", "1", cor_df$EMO_REGULATOR)
+
+cor_df$EMO_REGULATOR <- as.numeric(cor_df$EMO_REGULATOR)
+
+structure(cor_df)
+
+# Split by emo regulation types
+
+cor_df_chg <- ja_df3 %>% filter(EMO_CHNG_EFFORT >= 1)
+
+cor_df_chg <- select(cor_df_chg, AGEn, DASS, EMO_CHNG_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                 PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
+
+cor_df_acpt <- ja_df3 %>% filter(EMO_ACPT_EFFORT >= 1)
+
+cor_df_acpt <- select(cor_df_acpt, AGEn, DASS, EMO_ACPT_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+                 PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
+
 
 ```
 
-
-#### Correlation matrix Older Adults
-```{r}
-
-rcorr(as.matrix(cor_df_older), type = "spearman")
-
-```
 
 #### Correlation matrix for all
 ```{r}
@@ -920,7 +929,22 @@ rcorr(as.matrix(cor_df), type = "spearman")
 
 ```
 
-### Split data by the emotion regulators
+#### Correlation matrix for change emotions regulators
+```{r}
+
+rcorr(as.matrix(cor_df_chg), type = "spearman")
+
+```
+
+#### Correlation matrix for accept emotions regulators
+```{r}
+
+rcorr(as.matrix(cor_df_acpt), type = "spearman")
+
+```
+
+
+### Look more at emotion regulation effects
 ```{r}
 
 # Take to only the emotion regulators
@@ -937,77 +961,162 @@ emodf <- pivot_longer(emodf, cols = c(JAR01_WOA:JAR12_WOA),
 emodf <- pivot_longer(emodf, cols = c(EMO_CHNG_EFFORT_GMC, EMO_ACPT_EFFORT_GMC), 
                       names_to = "REGULATION_TYPE", values_to = "EMO_EFFORT")
 
+# Get rid of rows with NA
 
+emodf <- emodf[complete.cases(emodf[,c("EMO_EFFORT")]),]
+
+# Set regulation type as factor
 emodf$REGULATION_TYPE <- as.factor(emodf$REGULATION_TYPE)
+
+# Center avg fluid IQ
+
+emodf <- emodf %>% mutate(GMC_FLUIDIQ = scale(AVFLUIDIQ, scale = FALSE))
+
 ```
 
 
 ### LMM with Emotion Effort
 ```{r}
 
-model10 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT +
-                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-summary(model10)
-
-model11 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE +
+model11 <- lmer(WOA~EMO_EFFORT +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 summary(model11)
 
-anova(model10, model11)
-
-model12 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*REGULATION_TYPE +
+model12 <- lmer(WOA~EMO_EFFORT + REGULATION_TYPE +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model10, model12)
-
-anova(model11, model12) 
 
 summary(model12)
 
-model13 <- lmer(WOA~GMC_AGE*EMO_EFFORT + GMC_DASS +
+anova(model11, model12)
+
+model13 <- lmer(WOA~EMO_EFFORT*REGULATION_TYPE +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model11, model13)
+
+anova(model12, model13) 
 
 summary(model13)
 
-anova(model10, model13)
-
-model14 <- lmer(WOA~GMC_AGE + EMO_EFFORT*GMC_DASS +
+model14 <- lmer(WOA~EMO_EFFORT + GMC_DASS +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 summary(model14)
 
-anova(model10, model14)
+anova(model11, model14)
 
-# Model 10 fits best. 
+model15 <- lmer(WOA~EMO_EFFORT*GMC_DASS +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model15)
+
+anova(model11, model15)
+
+model16 <- lmer(WOA~EMO_EFFORT + GMC_AGE +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model11, model16)
+
+model17 <- lmer(WOA~EMO_EFFORT*GMC_AGE +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model16, model17)
+
+model18 <- lmer(WOA~EMO_EFFORT + GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model11, model18)
+
+model19 <- lmer(WOA~EMO_EFFORT*GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model18, model19)
 
 ```
 
-### Correlation matrix among only emotion regulators
+#### Add in fluid IQ interactions
 ```{r}
 
-emodf <- spread(emodf, JAR, WOA)
-
-emodf <- spread(emodf, REGULATION_TYPE, EMO_EFFORT)
-
-emodf_cor <- select(emodf, AGEn, DASS, AVFLUIDIQ, EMO_CHNG_EFFORT, 
-                    EMO_ACPT_EFFORT, AVG_WOA)
+model16 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 
-# Combine effort into one column
+model17 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-emodf_cor <- emodf_cor %>% 
-  mutate(EMO_EFFORT = ifelse(is.na(EMO_CHNG_EFFORT), EMO_ACPT_EFFORT,
-                             ifelse(is.na(EMO_ACPT_EFFORT), EMO_CHNG_EFFORT)))
+summary(model16, model17)
 
+model18 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE + GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-rcorr(as.matrix(emodf_cor), type = "spearman")
+model19 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE*GMC_FLUIDIQ +
+                  (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model18, model19)
+
+anova(model16, model19)
 
 ```
 
 
+# Confidence and perceived accuracy
+```{r}
+
+# Grand mean center pre-confidence
+
+ja_df4 <- ja_df3 
+
+ja_df4 <- ja_df4 %>% mutate(GMC_PRE_CONF = scale(PRE_CONFIDENCEn, center = TRUE, scale = FALSE)) 
+
+# Create grand mean centered confidence
+ja_df4 <- ja_df4 %>% mutate(GMC_CONFIDENCE= scale(PM_CONFIDENCE,scale=FALSE))
 
 
+# Grand mean center perceived advice accuracy
+ja_df4 <- ja_df4 %>% mutate(GMC_PERCEIVED_ACC = scale(PERCEIVED_ADVICE_ACCURACYn, scale = FALSE))
+
+# Pivot longer by WOA and Jar
+
+ja_df4 <- pivot_longer(ja_df4, cols = c("JAR01_WOA":"JAR12_WOA"), 
+                       names_to = "JAR", values_to = "WOA")
+
+ja_df4$JAR <- as.factor(ja_df4$JAR)
+
+
+```
+
+
+## LMM
+```{r}
+
+# Main effects only
+model20 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_CONFIDENCE + CONFIDENCE_TIME + 
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model20)
+
+model21 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_CONFIDENCE*CONFIDENCE_TIME +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model21)
+
+anova(model20, model21)
+
+model22 <- lmer(WOA~GMC_DASS + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_AGE +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model22)
+
+anova(model20, model22)
+
+model23 <- lmer(WOA~GMC_AGE + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_DASS +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model23)
+
+
+
+```
 
 
