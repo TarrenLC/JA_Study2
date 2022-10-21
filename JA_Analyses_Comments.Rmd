@@ -1038,24 +1038,28 @@ anova(model18, model19)
 #### Add in fluid IQ interactions
 ```{r}
 
-model16 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + GMC_FLUIDIQ +
+model20 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 
-model17 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*GMC_FLUIDIQ +
+model21 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-summary(model16, model17)
+summary(model20, model21)
 
-model18 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE + GMC_FLUIDIQ +
+model22 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE + GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-model19 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE*GMC_FLUIDIQ +
+model23 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE*GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-anova(model18, model19)
+anova(model22, model23)
 
-anova(model16, model19)
+anova(model20, model22)
+
+# Stick with model 20
+
+summary(model20)
 
 ```
 
@@ -1067,10 +1071,14 @@ anova(model16, model19)
 
 ja_df4 <- ja_df3 
 
-ja_df4 <- ja_df4 %>% mutate(GMC_PRE_CONF = scale(PRE_CONFIDENCEn, center = TRUE, scale = FALSE)) 
+## The centering is not working properly - Need to do manually and then recalcuate this.
+## Then go on to do the mixed models but keep track of them in the paper!
 
 # Create grand mean centered confidence
-ja_df4 <- ja_df4 %>% mutate(GMC_CONFIDENCE= scale(PM_CONFIDENCE,scale=FALSE))
+ja_df4 <- ja_df4 %>% mutate(GMC_PRE_CONF = scale(PRE_CONFIDENCEn, scale = FALSE)) 
+
+
+ja_df4 <- ja_df4 %>% mutate(GMC_POST_CONF = scale(POST_CONFIDENCEn,scale=FALSE))
 
 
 # Grand mean center perceived advice accuracy
@@ -1091,29 +1099,28 @@ ja_df4$JAR <- as.factor(ja_df4$JAR)
 ```{r}
 
 # Main effects only
-model20 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_CONFIDENCE + CONFIDENCE_TIME + 
+model24 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_PRE_CONF + (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model24)
+
+model25 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_CONFIDENCE*CONFIDENCE_TIME +
                   (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-summary(model20)
+summary(model25)
 
-model21 <- lmer(WOA~GMC_AGE + GMC_DASS + GMC_CONFIDENCE*CONFIDENCE_TIME +
+anova(model24, model25)
+
+model26 <- lmer(WOA~GMC_DASS + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_AGE +
                   (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-summary(model21)
+summary(model26)
 
-anova(model20, model21)
+anova(model24, model26)
 
-model22 <- lmer(WOA~GMC_DASS + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_AGE +
+model27 <- lmer(WOA~GMC_AGE + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_DASS +
                   (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-summary(model22)
-
-anova(model20, model22)
-
-model23 <- lmer(WOA~GMC_AGE + CONFIDENCE_TIME*GMC_CONFIDENCE*GMC_DASS +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-summary(model23)
+summary(model27)
 
 
 
