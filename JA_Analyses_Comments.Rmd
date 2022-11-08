@@ -1093,7 +1093,7 @@ no_er_cor_df %>%
 ```
 
 
-### Look more at emotion regulation effects
+# Look more at emotion regulation effects
 ```{r}
 
 # Take to only the emotion regulators
@@ -1124,7 +1124,7 @@ emodf <- emodf %>% mutate(GMC_FLUIDIQ = scale(AVFLUIDIQ, scale = FALSE))
 ```
 
 
-### LMM with Emotion Effort
+## LMM with Emotion Effort
 ```{r}
 
 model11 <- lmer(WOA~EMO_EFFORT + REGULATION_TYPE + GMC_AGE + GMC_FLUIDIQ + GMC_DASS +
@@ -1180,7 +1180,7 @@ summary(model11) # Retain the first model - nothing else really improves it.
 
 ```
 
-#### Add in fluid IQ interactions
+### Add in fluid IQ interactions
 ```{r}
 
 model20 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + GMC_FLUIDIQ +
@@ -1299,169 +1299,26 @@ levels(ja_df4$EMO_REG_TYPE) <- c("NONE", "ACCEPT", "CHANGE")
 
 levels(ja_df4$EMO_REG_TYPE)
 
-```
 
+# Create one emotion regulation effort variable
 
-## LMM with Emotion Regulation types as predictor
-```{r}
+ja_df4 <- ja_df4 %>% 
+  mutate(EMO_REG_EFFORT = case_when(is.na(EMO_CHNG_EFFORT) & is.na(EMO_ACPT_EFFORT)~ NA_real_,
+                                    !is.na(EMO_CHNG_EFFORT) & is.na(EMO_ACPT_EFFORT)~ as.numeric(EMO_CHNG_EFFORT),
+                                    is.na(EMO_CHNG_EFFORT) & !is.na(EMO_ACPT_EFFORT)~ as.numeric(EMO_ACPT_EFFORT),
+                                    TRUE ~ 0))
 
+# Center emotion regulation effort variable
 
-model27 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+# manually get the mean
+emo_effort_m <- ja_df4 %>% 
+  get_summary_stats(EMO_REG_EFFORT, type = "mean_sd")
 
-summary(model27)
-
-model28 <- lmer(WOA~GMC_AGE*EMO_REG_TYPE + GMC_DASS +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model27, model28)
-
-summary(model28)
-
-model29 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model27, model29)
-
-summary(model29) # Retain model.
-
-# Add pre-confidence
-
-model30 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS + GMC_PRE_CONF +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model30)
-
-model31 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS+ EMO_REG_TYPE*GMC_PRE_CONF +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model31)
-
-model32 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model32)
-
-summary(model32) # Retain model 32
-
-model33 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS + GMC_PRE_CONF + EMO_REG_TYPE*GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model32, model33)
-
+ja_df4 <- ja_df4 %>% mutate(GMC_EMO_REG_EFFORT = (EMO_REG_EFFORT - emo_effort_m$mean)) 
 
 ```
 
-### Check assumptions
-```{r}
-
-#2.1 Linearity of relationships 
-linearity_model32 <- plot_model(model32, type = "resid",  show.data = TRUE) 
-linearity_model32
-#2.3 Normality of residuals
-#FOR BOTH 2.2 and 2.3, we're going to use this command from sjPlot (as well as for some of our "other checks" in 2.5)
-#sjPlot has a suite of other diagnostic plots for each model - let's run these plots (type = "diag") and save them to a new object
-#you'll get a list of plots in one object from this command - we'll pull them in step-by-step
-model32_diagnostics1 <- visualize(model32, plot = "residuals")
-model32_diagnostics1
-
-tab_model(model32)
-
-model32_diagnostics2 <- modelDiagnostics(model32, ev.perc = .001)
-
-plot(model32_diagnostics2, ask = FALSE, ncol = 2, nrow = 3)
-
-```
-
-#### Robust LMM
-```{r}
-model32_robust <- rlmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS + GMC_PRE_CONF + GMC_PERCEIVED_ACC + 
-                          (1|ID), data = ja_df4, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-summary(model32_robust)
-
-summary(model32)
-```
-
-##### Diagnostics on robust lmm
-```{r}
-plot(model32_robust)
-
-tab_model(model32_robust)
-
-plot_model(model32_robust, type = "resid",  show.data = TRUE, show.loess = FALSE) 
-
-
-# Use the robust model given normality violations - cite Field & Wilcox 2017
-
-```
-
-
-### Visualisations and report for robust model
-```{r}
-
-## Tab model report
-tab_model(model32_robust,
-          show.re.var = FALSE, 
-          show.icc = FALSE, #don't show ICCs 
-          show.se = TRUE,
-          show.ci = 0.95, 
-          string.ci = "95% CI", 
-          collapse.se = TRUE,  
-          string.est = "Estimate (SE)", 
-          pred.labels = c("Intercept","Age", "Emotion Regulation (Accept)", 
-                          "Emotion Regulation (Change)", 
-                          "Depressive Symptom Score", "Pre-Confidence Score",
-                          "Perceived Advice Accuracy", 
-                          "Emotion Regulation (Accept)*DSS",
-                          "Emotion Regulation (Change)*DSS"), 
-          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
-          file = "model32_Robust.html")
-
-
-## Visualisation of model
-plot_model(model32_robust)
-```
-
-
-### Post hoc on interaction
-```{r}
-
-mod32_emm <- emtrends(model32_robust, var = "GMC_DASS", 
-                     pairwise~GMC_DASS*EMO_REG_TYPE)
-
-mod32_emm
-
-
-## Visualisation
-
-# Make apatheme
-
-apatheme=theme_bw()+
-  theme(panel.grid.major=element_blank(),
-        panel.grid.minor=element_blank(),
-        panel.border=element_blank(),
-        axis.line=element_line(),
-        text=element_text(family="Times New Roman"))
-
-plot_model32_int <- plot_model(model32_robust, type = "pred", #can use the same model type as before from sjplot
-                                terms = c("GMC_DASS", "EMO_REG_TYPE"), #enter the predictor first
-                                #so it'll appear on the x-axis, and the moderator second as different lines
-                                #I'm asking for just -1SD and + 1SD above the mean of the moderator
-                                #I took the specific numbers from from the output of 
-                                #the sim_slopes command above (just rounding those) 
-                                #if you don't do this, it automatically also includes a line at the mean 
-                                #as well - up to you if you want to do that. 
-                                title = " ", 
-                                axis.title = c("Depressive Symptom Score (grand-mean centered)", "Weight of Advice"), 
-                                legend.title = "Emotion Regulation Type", #adding a title to the legend
-                                show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
-                                ci.lvl = 0.95) + apatheme
-plot_model32_int 
-```
-
-
-### Make fluid IQ a GMC variable
+## Make fluid IQ a GMC variable
 ```{r}
 
 # manually get the mean
@@ -1476,16 +1333,234 @@ ja_df4 <- ja_df4 %>%
 
 ```
 
-
-### Model with fluid IQ added
+## Exploratory LMM 
 ```{r}
 
-model34 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_DASS + GMC_PRE_CONF + GMC_PERCEIVED_ACC + GMC_FLUIDIQ +
+
+model27 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + 
                   (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model27)
+
+model28 <- lmer(WOA~GMC_AGE*GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + 
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model27, model28) # Retain model 27
+
+summary(model28)
+
+model29 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + 
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model27, model29)
+
+summary(model29) # Retain model 27
+
+tab_model(model29)
+
+model30 <- lmer(WOA~GMC_AGE + GMC_DASS*GMC_EMO_REG_EFFORT + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + 
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model27, model30)
+
+summary(model30) # Retain model27
+
+# Add in perceived advice accuracy and pre-confidence
+
+model31 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model27, model31) # Retain model 31
+
+
+model32 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_DASS*GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model31, model32) # Retain model 31
+
+model33 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + GMC_PRE_CONF*GMC_DASS + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model31, model33)
+
+summary(model33) # Retain model 31
+
+model34 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + GMC_PRE_CONF + EMO_REG_TYPE*GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model31, model34)
+
+# Retain model 30
 
 summary(model34)
 
+
+model35 <- lmer(WOA~GMC_AGE + EMO_REG_EFFORT*GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_PRE_CONF + GMC_PERCEIVED_ACC + GMC_FLUIDIQ +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model31, model35)
+
+summary(model35) # Retain model31
+
+### Models without emotion regulation effort included ####
+
+model36 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model36)
+
+model37 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model36, model37) # Retain model 36
+
+summary(model31)
+
+
 ```
+
+### Check assumptions
+```{r}
+
+#2.1 Linearity of relationships 
+linearity_model36 <- plot_model(model36, type = "resid",  show.data = TRUE) 
+linearity_model36
+#2.3 Normality of residuals
+#FOR BOTH 2.2 and 2.3, we're going to use this command from sjPlot (as well as for some of our "other checks" in 2.5)
+#sjPlot has a suite of other diagnostic plots for each model - let's run these plots (type = "diag") and save them to a new object
+#you'll get a list of plots in one object from this command - we'll pull them in step-by-step
+model36_diagnostics1 <- visualize(model32, plot = "residuals")
+model32_diagnostics1
+
+tab_model(model32)
+
+model32_diagnostics2 <- modelDiagnostics(model32, ev.perc = .001)
+
+plot(model32_diagnostics2, ask = FALSE, ncol = 2, nrow = 3)
+
+```
+
+#### Robust LMM
+```{r}
+model31_robust <- rlmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE*GMC_EMO_REG_EFFORT + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                          (1|ID), data = ja_df4, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model31_robust)
+
+summary(model31)
+
+model36_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                          (1|ID), data = ja_df4, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model36_robust)
+
+summary(model36)
+```
+
+##### Diagnostics on robust lmm
+```{r}
+plot(model31_robust)
+
+plot(model36_robust)
+
+tab_model(model31_robust)
+
+tab_model(model36_robust)
+
+plot_model(model31_robust, type = "resid",  show.data = TRUE, show.loess = FALSE) 
+
+plot_model(model36_robust, type = "resid",  show.data = TRUE, show.loess = FALSE) 
+
+# Use the robust model given normality violations - cite Field & Wilcox 2017
+
+```
+
+
+### Visualisations and report for robust model
+```{r}
+
+## Tab model report
+tab_model(model31_robust,
+          show.re.var = FALSE, 
+          show.icc = FALSE, #don't show ICCs 
+          show.se = TRUE,
+          show.ci = 0.95, 
+          string.ci = "95% CI", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", 
+          #pred.labels = c("Intercept","Age", "Emotion Regulation (Accept)", 
+                        #  "Emotion Regulation (Change)", 
+                        #  "Depressive Symptom Score", "Pre-Confidence Score",
+                        #  "Perceived Advice Accuracy", 
+                        #  "Emotion Regulation (Accept)*DSS",
+                        #  "Emotion Regulation (Change)*DSS"), 
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model31_Robust.html")
+
+
+## Visualisation of model
+plot_model(model31_robust)
+
+## Tab model report
+tab_model(model36_robust,
+          show.re.var = FALSE, 
+          show.icc = FALSE, #don't show ICCs 
+          show.se = TRUE,
+          show.ci = 0.95, 
+          string.ci = "95% CI", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", 
+         # pred.labels = c("Intercept","Age", "Emotion Regulation (Accept)", 
+                      #    "Emotion Regulation (Change)", 
+                       #   "Depressive Symptom Score", "Pre-Confidence Score",
+                       #   "Perceived Advice Accuracy", 
+                       #   "Emotion Regulation (Accept)*DSS",
+                        #  "Emotion Regulation (Change)*DSS"), 
+          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
+          file = "model36_Robust.html")
+
+
+## Visualisation of model
+plot_model(model36_robust)
+```
+
+
+### Post hoc on interaction
+```{r}
+
+mod36_emm <- emtrends(model36_robust, var = "GMC_DASS", 
+                     pairwise~GMC_DASS*EMO_REG_TYPE)
+
+mod36_emm
+
+
+## Visualisation
+
+# Make apatheme
+
+apatheme=theme_bw()+
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line(),
+        text=element_text(family="Times New Roman"))
+
+plot_model36_int <- plot_model(model36_robust, type = "pred", #can use the same model type as before from sjplot
+                                terms = c("GMC_DASS", "EMO_REG_TYPE"), #enter the predictor first
+                                #so it'll appear on the x-axis, and the moderator second as different lines
+                                #I'm asking for just -1SD and + 1SD above the mean of the moderator
+                                #I took the specific numbers from from the output of 
+                                #the sim_slopes command above (just rounding those) 
+                                #if you don't do this, it automatically also includes a line at the mean 
+                                #as well - up to you if you want to do that. 
+                                title = " ", 
+                                axis.title = c("Depressive Symptom Score (grand-mean centered)", "Weight of Advice"), 
+                                legend.title = "Emotion Regulation Type", #adding a title to the legend
+                                show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
+                                ci.lvl = 0.95) + apatheme
+plot_model36_int 
+```
+
 
 
 # Difference between age groups and emo regulation type
@@ -1503,5 +1578,31 @@ chitest$expected
 
 ```
 
+
+# Emotion regulation and fluid IQ
+```{r}
+
+model39 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + EMO_REG_TYPE*GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model39)
+
+
+model40 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + EMO_REG_TYPE*GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model40)
+
+model41 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + EMO_REG_TYPE*GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model41)
+
+model42 <- lmer(WOA~EMO_REG_TYPE*GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+summary(model42)
+
+```
 
 
