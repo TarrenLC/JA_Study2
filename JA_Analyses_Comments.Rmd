@@ -2,11 +2,14 @@
 title: "JA_Analyses_Comments"
 author: "T.L"
 date: "2022-09-12"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 ```
 
 
@@ -765,9 +768,7 @@ summary(model8)
 
 ##### Diagnostics on robust lmm
 ```{r}
-plot(model8_robust)
 
-visualize(model8_robust, plot = "residuals")
 
 tab_model(model8_robust)
 
@@ -804,7 +805,7 @@ plot_model(model8_robust)
 
 
 ### Post hoc on interaction
-```{r}
+```{r error=TRUE}
 
 mod8_emm <- emtrends(model8_robust, var = "GMC_DASS", 
                      pairwise~GMC_DASS*EMO_REGULATOR)
@@ -820,8 +821,7 @@ apatheme=theme_bw()+
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
         panel.border=element_blank(),
-        axis.line=element_line(),
-        text=element_text(family="Times New Roman"))
+        axis.line=element_line())
 
 plot_model8_int <- plot_model(model8_robust, type = "pred", #can use the same model type as before from sjplot
                                 terms = c("GMC_DASS", "EMO_REGULATOR"), #enter the predictor first
@@ -1190,8 +1190,6 @@ model20 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + GMC_FLUIDIQ +
 model21 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT*GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-summary(model20, model21)
-
 model22 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_EFFORT + REGULATION_TYPE + GMC_FLUIDIQ +
                   (1|ID), data = emodf, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
@@ -1412,7 +1410,7 @@ summary(model29)
 ```
 
 ### Check assumptions
-```{r}
+```{r error=TRUE}
 
 #2.1 Linearity of relationships 
 linearity_model29 <- plot_model(model29, type = "resid",  show.data = TRUE) 
@@ -1443,7 +1441,7 @@ summary(model29)
 ```
 
 ##### Diagnostics on robust lmm
-```{r}
+```{r error=TRUE}
 plot(model29_robust)
 
 tab_model(model29_robust)
@@ -1486,7 +1484,7 @@ plot_model(model29_robust)
 
 
 ### Post hoc on interaction
-```{r}
+```{r error=TRUE}
 
 mod29_emm <- emtrends(model29_robust, var = "GMC_DASS", 
                      pairwise~GMC_DASS*EMO_REG_TYPE)
@@ -1502,8 +1500,7 @@ apatheme=theme_bw()+
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
         panel.border=element_blank(),
-        axis.line=element_line(),
-        text=element_text(family="Times New Roman"))
+        axis.line=element_line())
 
 plot_model29_int <- plot_model(model29_robust, type = "pred", #can use the same model type as before from sjplot
                                 terms = c("GMC_DASS", "EMO_REG_TYPE"), #enter the predictor first
@@ -1526,6 +1523,7 @@ plot_model29_int
 # Difference between age groups and emo regulation type
 ## Chi sqare analysis
 ```{r}
+
 ggplot(ja_df4) +
   aes(x = AGEGROUP, fill = EMO_REG_TYPE) +
   geom_bar(position = "dodge")
