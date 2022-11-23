@@ -50,6 +50,8 @@ library(Hmisc) # Correlation analyses
 
 library(knitr) # For printing nice tables
 
+library(papaja) # To format figures in APA
+
 ```
 
 
@@ -1524,6 +1526,9 @@ plot_model29_int
 ## Chi sqare analysis
 ```{r}
 
+ja_df4 <- ja_df4 %>% 
+  group_by(ID)
+
 ggplot(ja_df4) +
   aes(x = AGEGROUP, fill = EMO_REG_TYPE) +
   geom_bar(position = "dodge")
@@ -1533,6 +1538,21 @@ chitest <- chisq.test(table(ja_df4$AGEGROUP, ja_df4$EMO_REG_TYPE))
 chitest
 
 chitest$expected
+
+ja_df4 %>% 
+  count(ID)
+
+## Create APA bar graph
+
+graph1 <- ja_df4 %>%
+  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE)) +
+    geom_bar(position = "dodge") +
+  theme_apa(base_size = 14) +
+  scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged','Older')) +
+  scale_y_discrete(name = "Count")
+  scale_fill_discrete(name ="Emotion Regulation Method",labels = c("None", "Acceptance", "Change"))
+
+graph1
 
 ```
 
