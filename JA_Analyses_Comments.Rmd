@@ -1542,16 +1542,24 @@ chitest$expected
 ja_df4 %>% 
   count(ID)
 
+levels(ja_df4$EMO_REG_TYPE)
+
 ## Create APA bar graph
 
 graph1 <- ja_df4 %>%
-  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE)) +
+  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE, color())) +
     geom_bar(position = "dodge") +
   theme_apa(base_size = 14) +
   scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged','Older')) +
-  scale_y_discrete(name = "Count")
-  scale_fill_discrete(name ="Emotion Regulation Method",labels = c("None", "Acceptance", "Change"))
+  scale_y_discrete(name = "Count") +
+  scale_colour_manual(values=c("black", "darkgrey", "azure3"), 
+                       name="Emotion Regulation Method",
+                       breaks=c("NONE", "ACCEPT", "CHANGE"),
+                       labels=c("None", "Acceptance", "Change"))
 
+  scale_colour_discrete(name ="Emotion Regulation Method",labels = c("None", "Acceptance", "Change")) 
+
+  
 graph1
 
 ```
