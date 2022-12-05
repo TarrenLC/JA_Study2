@@ -726,7 +726,6 @@ model10 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, cont
 anova(model8, model10)
 
 summary(model8) ### Significant depressive symptoms and emotion regulation interaction
-
 ```
 
 ### Plot interaction
@@ -900,7 +899,7 @@ ja_df3 <- ja_df3 %>%
 
 # Select variables for correlation
 
-cor_df <- select(ja_df3, AGEn, DASS, EMO_REGULATOR, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+cor_df <- select(ja_df3, AGEn, DASS, PRE_CONFIDENCEn, POST_CONFIDENCEn,
                  PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
 
 # Change factored levels of emotion regulator
