@@ -2,7 +2,9 @@
 title: "JA2_Preprocessing"
 author: "T.L"
 date: "2022-08-10"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -141,7 +143,7 @@ write.csv(timingdf, "JA_2_Timing_Variables.csv", row.names = FALSE) # Save the t
 
 ## Attempt to convert multiple columns at once 
 
-tidydf3 <- select(tidydf2, AGE:CURRENT_HEALTH, ATTN_1:est2_12_advice) #create a new dataset with the columns you want to convert, use : to specify "from column x to column y"
+tidydf3 <- select(tidydf2, GENDER:CURRENT_HEALTH, ATTN_1:est2_12_advice) #create a new dataset with the columns you want to convert, use : to specify "from column x to column y"
 tidydf3 <- lapply(tidydf3, function(x) as.integer(as.character(x)))
 tidydf3=data.frame(tidydf3)
 names(tidydf3)=paste(names(tidydf3),"n",sep = "") #rename the variables by adding an n to their name to differentiate them
@@ -1723,7 +1725,7 @@ df8 <- df8 %>% mutate(GMC_AGE = scale(AGEn, center = TRUE, scale = FALSE))
   
 ## Grand Mean Center Education
 
-df9 <- df9 %>% mutate(GMC_EDU = scale(EDUn, scale = FALSE))
+df9 <- df8 %>% mutate(GMC_EDU = scale(EDUn, scale = FALSE))
 
 ## Grand Mean Center HEALTH
 
@@ -1777,6 +1779,12 @@ olderdf <- select(older, ID, PRAC01_WOA, PRAC02_WOA, PRAC03_WOA, JAR01_WOA, JAR0
                   JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA, DASS, DASS_SEVERITY,
                   AVFLUIDIQ)
 
+ja1 <- select(df9,ID, GENDER, AGEn, AGEGROUP, MARITAL_STATn, EDUn, CURRENT_HEALTHn, PRAC1_1n, PRAC1_2n,
+              PRAC1_3n, prac2_1_advicen, prac2_2_advicen, prac2_3_advicen, PRE_CONFIDENCEn,
+              EMO_REGn, EMO_REG_EFFORT1n, EMO_REG_EFFORT2n, POST_CONFIDENCEn,
+              PERCEIVED_ADVICE_ACCURACYn, AVG_TIME_PRAC_1, AVG_TIME_PRAC_2, 
+              AVG_TIME_EST_1, AVG_TIME_EST_2)
+
 
 # Combine the age group dfs together
 
@@ -1784,18 +1792,27 @@ all_ages <- youngdf %>% full_join(middledf)
   
 all_ages <- all_ages %>% full_join(olderdf)
 
-# Combine all ages with the ja1
+# Combine all ages with the ja
 
 full_ja_df <- ja1 %>% left_join(all_ages)
+
+full_ja_df$GENDER <- as.factor(full_ja_df$GENDER)
+
+tabyl(full_ja_df, GENDER, AGEGROUP)
+
+full_ja_df %>% 
+  group_by(AGEGROUP) %>% 
+  get_summary_stats(type = "common")
+
 
 ```
 
 # Save data file
 ```{r}
 
-save(full_ja_df, file = "Judge_Advisor_2022_preprocessed.RData")
+# save(full_ja_df, file = "Judge_Advisor_2022_preprocessed.RData")
 
-write.csv(full_ja_df, "JA_2022_Full_Data_preprocessed.csv", row.names = FALSE)
+# write.csv(full_ja_df, "JA_2022_Full_Data_preprocessed.csv", row.names = FALSE)
 
 ```
 

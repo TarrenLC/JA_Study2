@@ -717,6 +717,8 @@ summary(model9)
 
 anova(model4,model9)
 
+anova(model8, model9)
+
 summary(model4) # Without DASS
 
 model10 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
@@ -1408,6 +1410,30 @@ anova(model29, model36)
 
 summary(model29)
 
+model37 <- lmer(WOA~GMC_AGE*GMC_FLUIDIQ + GMC_DASS*EMO_REG_TYPE + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model29, model37)
+
+model38 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_FLUIDIQ + GMC_DASS*EMO_REG_TYPE + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model29, model38)
+
+model39 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model29, model39)
+
+model40 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_PERCEIVED_ACC + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model29, model40)
+
+model41 <- lmer(WOA~GMC_AGE*EMO_REG_TYPE*GMC_DASS*GMC_FLUIDIQ + GMC_PERCEIVED_ACC + GMC_PRE_CONF +
+                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+
+anova(model29, model41)
 
 ```
 
@@ -1520,6 +1546,48 @@ plot_model29_int <- plot_model(model29_robust, type = "pred", #can use the same 
 plot_model29_int 
 ```
 
+### Main effects visualisations
+```{r}
+
+
+# pre_conf_plot <- ggplot() +
+#  geom_point(data=ja_df4, aes(GMC_PRE_CONF, WOA)) + 
+#  geom_point(data=model29_robust, aes(x=GMC_PRE_CONF, y=fit), color="blue") +
+#  geom_line(data=model29_robust, aes(x=GMC_PRE_CONF, y=fit), color="blue") +
+#  geom_ribbon(data= model29_robust, aes(x=GMC_PRE_CONF, ymin=lower, ymax=upper), alpha= 0.3, fill="blue") +
+#  labs(x="Pre-Advice Confidence", y="WOA")
+
+# pre_conf_plot
+
+## The above plot does not work with an rlmer model (a robust model)
+
+apatheme=theme_bw()+
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        panel.border=element_blank(),
+        axis.line=element_line())
+
+# Pre-confidence plot
+pre_conf_plot <- plot_model(model29_robust, type = "pred", #can use the same model type as before from sjplot
+                                terms = "GMC_PRE_CONF", 
+                                title = " ", 
+                                axis.title = c("Pre-Advice Confidence (grand-mean centered)", "Weight of Advice"), 
+                                show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
+                                ci.lvl = 0.95) + apatheme
+pre_conf_plot 
+
+# Perceived advice accuracy plot
+
+per_advice_acc_plot <- plot_model(model29_robust, type = "pred", #can use the same model type as before from sjplot
+                                terms = "GMC_PERCEIVED_ACC", 
+                                title = " ", 
+                                axis.title = c("Perceived Advice Accuracy (grand-mean centered)", "Weight of Advice"), 
+                                show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
+                                ci.lvl = 0.95) + apatheme
+per_advice_acc_plot
+
+```
+
 
 
 # Difference between age groups and emo regulation type
@@ -1547,20 +1615,19 @@ levels(ja_df4$EMO_REG_TYPE)
 ## Create APA bar graph
 
 graph1 <- ja_df4 %>%
-  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE, color())) +
+  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE)) +
     geom_bar(position = "dodge") +
-  theme_apa(base_size = 14) +
   scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged','Older')) +
   scale_y_discrete(name = "Count") +
-  scale_colour_manual(values=c("black", "darkgrey", "azure3"), 
-                       name="Emotion Regulation Method",
-                       breaks=c("NONE", "ACCEPT", "CHANGE"),
-                       labels=c("None", "Acceptance", "Change"))
+  scale_fill_brewer(palette = "Greys", name = "Emotion Regulation Method", breaks = c("NONE", "ACCEPT", "CHANGE"),
+                    labels=c("None", "Acceptance", "Change")) +
+  theme_apa(base_size = 14)
 
-  scale_colour_discrete(name ="Emotion Regulation Method",labels = c("None", "Acceptance", "Change")) 
 
-  
-graph1
+graph1 
+
+# When needing to change legend labels and titles, as well as change the colours,
+# use the scale_fill_brewer command. Add in theme_apa at the end - Otherwise errors.
 
 ```
 
