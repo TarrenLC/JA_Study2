@@ -464,6 +464,10 @@ dep_diff_lm <- lm(DASS~AGEGROUP, data = full_ja_df)
 
 summary(dep_diff_lm) # Less depressive symptoms for older adults
 
+full_ja_df %>% 
+  group_by(AGEGROUP) %>% 
+  get_summary_stats(DASS)
+
 ```
 
 ## Pre-Confidence
@@ -1288,17 +1292,19 @@ anova(model24, model26)
 # Use case_when instead of ifelse
 
 ja_df4 <- ja_df4 %>% 
-  mutate(EMO_REG_TYPE = case_when(EMO_CHNG_EFFORT > 0 ~ "CHANGE",
-                                   EMO_ACPT_EFFORT > 0 ~ "ACCEPT",
-                                   TRUE ~ "NONE"))
+  mutate(EMO_REG_TYPE = case_when(EMO_CHNG_EFFORT >= 0 ~ "CHANGE",
+                                  EMO_ACPT_EFFORT >= 0 ~ "ACCEPT",
+                                  TRUE ~ "NONE"))
   
 # Set as a factor
 
 ja_df4$EMO_REG_TYPE <- as.factor(ja_df4$EMO_REG_TYPE)
 
-levels(ja_df4$EMO_REG_TYPE) <- c("NONE", "ACCEPT", "CHANGE")
+### THIS CODE IS INCORRECT! levels(ja_df4$EMO_REG_TYPE) <- c("NONE", "ACCEPT", "CHANGE")
 
 levels(ja_df4$EMO_REG_TYPE)
+
+ja_df4$EMO_REG_TYPE <- relevel(ja_df4$EMO_REG_TYPE, "NONE")
 
 
 # Create one emotion regulation effort variable
@@ -1409,32 +1415,10 @@ anova(model29, model36)
 
 summary(model29)
 
-model37 <- lmer(WOA~GMC_AGE*GMC_FLUIDIQ + GMC_DASS*EMO_REG_TYPE + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model37)
-
-model38 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_FLUIDIQ + GMC_DASS*EMO_REG_TYPE + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model38)
-
-model39 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model39)
-
-model40 <- lmer(WOA~GMC_AGE + EMO_REG_TYPE*GMC_PERCEIVED_ACC + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model40)
-
-model41 <- lmer(WOA~GMC_AGE*EMO_REG_TYPE*GMC_DASS*GMC_FLUIDIQ + GMC_PERCEIVED_ACC + GMC_PRE_CONF +
-                  (1|ID), data = ja_df4,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
-
-anova(model29, model41)
 
 ```
+
+
 
 ### Check assumptions
 ```{r error=TRUE}
