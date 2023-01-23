@@ -52,6 +52,10 @@ library(knitr) # For printing nice tables
 
 library(papaja) # To format figures in APA
 
+library(reshape2) # Can use functions like melt
+
+library(chisq.posthoc.test) # For post hoc chisq tests
+
 ```
 
 
@@ -901,20 +905,20 @@ ja_df3 <- ja_df3 %>%
                           JAR09_WOA, JAR10_WOA, JAR11_WOA, JAR12_WOA), 
                         na.rm=TRUE))
 
+# Change factored levels of emotion regulator
+
+ja_df3$EMO_REGULATOR <- gsub("NO", "0", ja_df3$EMO_REGULATOR)
+
+ja_df3$EMO_REGULATOR <- gsub("YES", "1", ja_df3$EMO_REGULATOR)
+
+ja_df3$EMO_REGULATOR <- as.numeric(ja_df3$EMO_REGULATOR)
+
+structure(ja_df3)
+
 # Select variables for correlation
 
 cor_df <- select(ja_df3, AGEn, DASS, PRE_CONFIDENCEn, POST_CONFIDENCEn,
                  PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
-
-# Change factored levels of emotion regulator
-
-cor_df$EMO_REGULATOR <- gsub("NO", "0", cor_df$EMO_REGULATOR)
-
-cor_df$EMO_REGULATOR <- gsub("YES", "1", cor_df$EMO_REGULATOR)
-
-cor_df$EMO_REGULATOR <- as.numeric(cor_df$EMO_REGULATOR)
-
-structure(cor_df)
 
 # Split by emo regulation types
 
@@ -922,7 +926,7 @@ cor_df_chg <- ja_df3 %>% filter(EMO_CHNG_EFFORT >= 1)
 
 cor_df_chg <- select(cor_df_chg, AGEn, DASS, EMO_CHNG_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
                  PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
-
+                 
 cor_df_acpt <- ja_df3 %>% filter(EMO_ACPT_EFFORT >= 1)
 
 cor_df_acpt <- select(cor_df_acpt, AGEn, DASS, EMO_ACPT_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
@@ -1102,6 +1106,15 @@ no_er_cor_df %>%
 
 # Look more at emotion regulation effects
 ```{r}
+# Change back to factored levels of emotion regulator
+
+ja_df3$EMO_REGULATOR <- gsub("0", "NO", ja_df3$EMO_REGULATOR)
+
+ja_df3$EMO_REGULATOR <- gsub("1", "YES", ja_df3$EMO_REGULATOR)
+
+ja_df3$EMO_REGULATOR <- as.factor(ja_df3$EMO_REGULATOR)
+
+structure(ja_df3)
 
 # Take to only the emotion regulators
 
@@ -1616,4 +1629,17 @@ graph1
 
 
 
+### Post-hoc
+```{r}
+
+contingency_table <- table(ja_df4$AGEGROUP, ja_df4$EMO_REG_TYPE)
+## contingency_table <- melt(contingency_table, na.rm = FALSE, id = 'EMO_REG_TYPE') ## Still made a 3x3 table which will not work 
+contingency_table
+
+## pairwise.prop.test(contingency_table) ## Will not work due to there being more than 2 columns
+
+
+chisq.posthoc.test(contingency_table) # Works with more than 2 columns
+
+```
 
