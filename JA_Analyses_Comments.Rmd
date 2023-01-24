@@ -56,6 +56,9 @@ library(reshape2) # Can use functions like melt
 
 library(chisq.posthoc.test) # For post hoc chisq tests
 
+library(RVAideMemoire) # Another post hoc test package
+
+
 ```
 
 
@@ -1632,14 +1635,36 @@ graph1
 ### Post-hoc
 ```{r}
 
-contingency_table <- table(ja_df4$AGEGROUP, ja_df4$EMO_REG_TYPE)
-## contingency_table <- melt(contingency_table, na.rm = FALSE, id = 'EMO_REG_TYPE') ## Still made a 3x3 table which will not work 
-contingency_table
+contingency_table1 <- table(ja_df4$AGEGROUP, ja_df4$EMO_REG_TYPE)
 
-## pairwise.prop.test(contingency_table) ## Will not work due to there being more than 2 columns
+### contingency_table1 <- melt(contingency_table1)
+
+contingency_table1
+
+chisq.theo.multcomp(contingency_table1, p.method = "bonferroni") # THIS WORKS!
+
+# Combine the age group and emotion regulation method columns
+
+## contingency_table1 <- contingency_table1 %>% 
+##  unite('AGE_EMO', Var1:Var2, remove = TRUE)
+
+## contingency_table1
+  
+## pairwise.prop.test(contingency_table1) ## Will not work due to there being more than 2 columns
 
 
-chisq.posthoc.test(contingency_table) # Works with more than 2 columns
+## chisq.posthoc.test(contingency_table1) # Works with more than 2 columns
+
+## pairwise.prop.test(contingency_table1, c(rep(sum(contingency_table1),nlevels(contingency_table1))))
+
+## chisq.test(contingency_table1)
+
+## pairwiseNominalIndependence(contingency_table1,
+##                            fisher = FALSE,
+##                            gtest  = FALSE,
+##                            chisq  = TRUE,
+##                            method = "fdr")
+
 
 ```
 
