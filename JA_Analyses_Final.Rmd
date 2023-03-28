@@ -3,13 +3,12 @@ title: "JA_Analyses_Final"
 author: "T.L"
 date: "2023-03-27"
 output:
-  pdf_document: default
-  html_document: default
+  pdf_document:
+    latex_engine: xelatex
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```{r include=FALSE}
+knitr::opts_chunk$set(results = "hide", echo = TRUE, warning = FALSE, message = FALSE, error = TRUE) 
 ```
 
 
@@ -164,11 +163,14 @@ young_exl_out <- select(young, PRAC1_OP, PRAC2_OP, PRAC3_OP)
 
 young_exl_out <- young_exl_out %>%
   mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
-                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, 
+                                    as.integer(NA), PRAC1_OP)),
          PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
-                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, 
+                                    as.integer(NA), PRAC2_OP)),
          PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
-                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, 
+                                    as.integer(NA), PRAC3_OP)))
 
 youngmsd <- young_exl_out %>% 
   get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
@@ -215,11 +217,14 @@ middle_exl_out <- select(middle, PRAC1_OP, PRAC2_OP, PRAC3_OP)
 
 middle_exl_out <- middle_exl_out %>%
   mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
-                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, 
+                                    as.integer(NA), PRAC1_OP)),
          PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
-                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, 
+                                    as.integer(NA), PRAC2_OP)),
          PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
-                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, 
+                                    as.integer(NA), PRAC3_OP)))
 
 middlemsd <- middle_exl_out %>% 
   get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
@@ -267,11 +272,14 @@ older_exl_out <- select(older, PRAC1_OP, PRAC2_OP, PRAC3_OP)
 
 older_exl_out <- older_exl_out %>%
   mutate(PRAC1_OP = ifelse(is.na(PRAC1_OP), NA,
-                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, as.integer(NA), PRAC1_OP)),
+                             ifelse(PRAC1_OP == 5000 |PRAC1_OP == -5000, 
+                                    as.integer(NA), PRAC1_OP)),
          PRAC2_OP = ifelse(is.na(PRAC2_OP), NA,
-                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, as.integer(NA), PRAC2_OP)),
+                             ifelse(PRAC2_OP == 5000 |PRAC2_OP == -5000, 
+                                    as.integer(NA), PRAC2_OP)),
          PRAC3_OP = ifelse(is.na(PRAC3_OP), NA,
-                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, as.integer(NA), PRAC3_OP)))
+                             ifelse(PRAC3_OP == 5000 |PRAC3_OP == -5000, 
+                                    as.integer(NA), PRAC3_OP)))
 
 oldermsd <- older_exl_out %>% 
   get_summary_stats(PRAC1_OP, PRAC2_OP, PRAC3_OP, type = "mean_sd")
@@ -453,7 +461,7 @@ estimates(post_conf_diff_lm)
 
 
 ## Perceived Advice Accuracy
-```{r, error=TRUE}
+```{r error=TRUE}
 
 advice_acc_diff <- full_ja_df %>%
   anova_test(PERCEIVED_ADVICE_ACCURACYn~AGEGROUP)
@@ -462,7 +470,8 @@ advice_acc_diff
 
 advice_acc_diff_lm <- lm(PERCEIVED_ADVICE_ACCURACYn~AGEGROUP, data = full_ja_df)
 
-summary(advice_acc_diff_lm) # Difference between young and older - Older perceive the advice as less accurate
+summary(advice_acc_diff_lm) # Difference between young and older - 
+#Older perceive the advice as less accurate
 
 estimates(advice_acc_diff_lm)
 
@@ -470,7 +479,7 @@ estimates(advice_acc_diff_lm)
 
 
 ## Average Fluid IQ
-```{r, error=TRUE}
+```{r error=TRUE}
 
 fluidiq_diff <- full_ja_df %>%
   anova_test(AVFLUIDIQ~AGEGROUP)
@@ -512,11 +521,13 @@ ja_df1 <- ja_df1 %>% mutate(GMC_DASS = scale(DASS, scale = FALSE))
 
 ## Basic model with predictors
 
-model1 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model1 <- lmer(WOA~GMC_AGE + GMC_DASS + (1|ID), data = ja_df1, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 # Interaction model
 
-model2 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID), data = ja_df1, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model2 <- lmer(WOA~GMC_AGE*GMC_DASS + (1|ID), data = ja_df1, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 # Compare main effects and interaction models
 anova(model1, model2)
@@ -547,24 +558,19 @@ tab_model(model1)
 ### Table of model1
 ```{r}
 
-tab_model(model1, #for model 2
-          show.re.var = FALSE, #don't show random effects variances (not typically reported in papers)
-          show.icc = FALSE, #don't show ICCs 
-          show.se = TRUE, #show standard errors
-          show.r2 = FALSE, #sjPlot calculates a psuedo-R2 variable that indicates the variance explained by the model 
-          #it uses the logic in this paper: https://royalsocietypublishing.org/doi/10.1098/rsif.2017.0213
-          #R2 is controversial for multilevel models and this is not my preferred method of computing it - so I will omit it here
-          #If you do want to include a measure of variance explained, I recommend the package R2mlm, which uses the methods from Rights & Sterba, 2019 
-          #(https://psycnet.apa.org/doiLanding?doi=10.1037%2Fmet0000184)
-          show.ci = 0.95, #I'm printing the 95% confidence intervals
-          string.ci = "95% CI", #and labelling that column "95% CI"
-          p.val = "satterthwaite", #I'm asking it to calculate p-values using the satterthwaite approximation (same thing lmerTest does)
-          collapse.se = TRUE,  #I'm asking for the SE to be collapsed into the same column as the estimate and in brackets (typical APA format)
-          string.est = "Estimate (SE)", #and for that column to be called "Estimate (SE)"
-          pred.labels = c("Intercept","Age"), #now I'm giving it what I want my predictor variables to be labelled in the order that they
-          #appear in the model output (check your output from summary above if you're not sure)
-          dv.labels = c("Weight of Advice"), #now I'm saying what I want my outcome variable to be labelled
-          file = "model1.html") #what I'd like to save my file as - if you don't want to save yet, don't include this
+tab_model(model1,
+          show.re.var = FALSE, 
+          show.icc = FALSE, 
+          show.se = TRUE, 
+          show.r2 = FALSE, 
+          show.ci = 0.95, 
+          string.ci = "95% CI", 
+          p.val = "satterthwaite", 
+          collapse.se = TRUE,  
+          string.est = "Estimate (SE)", 
+          pred.labels = c("Intercept","Age"), 
+          dv.labels = c("Weight of Advice"), 
+          file = "model1.html") 
 
 ```
 
@@ -583,23 +589,28 @@ ja_df2 <- ja_df1 %>%
 ```{r}
 # Age, DSS, Emotion Regulation
 
-model3 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model3 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REGULATOR + (1|ID), data = ja_df2, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
-model4 <- lmer(WOA~GMC_DASS + GMC_AGE*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model4 <- lmer(WOA~GMC_DASS + GMC_AGE*EMO_REGULATOR + (1|ID), data = ja_df2, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 anova(model3, model4) # Retain model 3
 
-model5 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model5 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 anova(model3, model5)
 
 # Retain model 5
 
-model6 <- lmer(WOA~ EMO_REGULATOR + GMC_AGE*GMC_DASS + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model6 <- lmer(WOA~ EMO_REGULATOR + GMC_AGE*GMC_DASS + (1|ID), data = ja_df2, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 anova(model3, model6)
 
-model7 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model7 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, 
+               control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
 
 anova(model5, model7)
 
@@ -636,7 +647,9 @@ plot(model5_diagnostics, ask = FALSE, ncol = 2, nrow = 3)
 ## Robust lmm
 ```{r}
 
-model5_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), data = ja_df2, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model5_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REGULATOR + (1|ID), 
+                       data = ja_df2, control=lmerControl(optimizer="bobyqa", 
+                                                          optCtrl=list(maxfun=2e5)))
 
 summary(model5_robust)
 
@@ -654,7 +667,7 @@ tab_model(model5_robust)
 plot_model(model5_robust, type = "resid",  show.data = TRUE, show.loess = FALSE) 
 
 
-# Use the robust model given normality violations - cite Field & Wilcox 2017
+# Use the robust model given normality violations
 
 ```
 
@@ -707,7 +720,8 @@ plot_model5_int <- plot_model(model5_robust,
                               colors = "gs",
                                 terms = c("GMC_DASS", "EMO_REGULATOR"), 
                                 title = " ", 
-                                axis.title = c("Depressive Symptom Score (grand-mean centered)", "Weight of Advice"), 
+                                axis.title = c("Depressive Symptom Score (grand-mean centered)", 
+                                               "Weight of Advice"), 
                                 legend.title = "Emotion Regulator",
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
@@ -748,8 +762,10 @@ ja_df3$EMO_REG_TYPE <- relevel(ja_df3$EMO_REG_TYPE, "NONE")
 
 ja_df3 <- ja_df3 %>% 
   mutate(EMO_REG_EFFORT = case_when(is.na(EMO_CHNG_EFFORT) & is.na(EMO_ACPT_EFFORT)~ NA_real_,
-                                    !is.na(EMO_CHNG_EFFORT) & is.na(EMO_ACPT_EFFORT)~ as.numeric(EMO_CHNG_EFFORT),
-                                    is.na(EMO_CHNG_EFFORT) & !is.na(EMO_ACPT_EFFORT)~ as.numeric(EMO_ACPT_EFFORT),
+                                    !is.na(EMO_CHNG_EFFORT) & is.na(EMO_ACPT_EFFORT)~ 
+                                      as.numeric(EMO_CHNG_EFFORT),
+                                    is.na(EMO_CHNG_EFFORT) & !is.na(EMO_ACPT_EFFORT)~ 
+                                      as.numeric(EMO_ACPT_EFFORT),
                                     TRUE ~ 0))
 
 # Center emotion regulation effort variable
@@ -758,7 +774,8 @@ ja_df3 <- ja_df3 %>%
 emo_effort_m <- ja_df3 %>% 
   get_summary_stats(EMO_REG_EFFORT, type = "mean_sd")
 
-ja_df3 <- ja_df3 %>% mutate(GMC_EMO_REG_EFFORT = (EMO_REG_EFFORT - emo_effort_m$mean)) 
+ja_df3 <- ja_df3 %>% mutate(GMC_EMO_REG_EFFORT = (EMO_REG_EFFORT - 
+                                                    emo_effort_m$mean)) 
 
 
 ja_df4 <- ja_df3 %>% 
@@ -783,9 +800,11 @@ ja_df4 %>%
 emo_type_graph <- ja_df4 %>%
   ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE)) +
     geom_bar(position = "dodge") +
-  scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged','Older')) +
+  scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged',
+                                                  'Older')) +
   scale_y_discrete(name = "Count") +
-  scale_fill_brewer(palette = "Greys", name = "Emotion Regulation Method", breaks = c("NONE", "ACCEPT", "CHANGE"),
+  scale_fill_brewer(palette = "Greys", name = "Emotion Regulation Method", 
+                    breaks = c("NONE", "ACCEPT", "CHANGE"),
                     labels=c("None", "Acceptance", "Change")) +
   theme_apa(base_size = 14)
 
@@ -839,12 +858,14 @@ structure(ja_df5)
 
 cor_df_chg <- ja_df5 %>% filter(EMO_CHNG_EFFORT >= 1)
 
-cor_df_chg <- select(cor_df_chg, AGEn, DASS, EMO_CHNG_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+cor_df_chg <- select(cor_df_chg, AGEn, DASS, EMO_CHNG_EFFORT, PRE_CONFIDENCEn, 
+                     POST_CONFIDENCEn,
                  PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
                  
 cor_df_acpt <- ja_df5 %>% filter(EMO_ACPT_EFFORT >= 1)
 
-cor_df_acpt <- select(cor_df_acpt, AGEn, DASS, EMO_ACPT_EFFORT, PRE_CONFIDENCEn, POST_CONFIDENCEn,
+cor_df_acpt <- select(cor_df_acpt, AGEn, DASS, EMO_ACPT_EFFORT, PRE_CONFIDENCEn, 
+                      POST_CONFIDENCEn,
                  PERCEIVED_ADVICE_ACCURACYn, AVFLUIDIQ, AVG_WOA)
 
 
@@ -868,8 +889,10 @@ apply_if <- function(mat, p, f) {
 }
 
 #' @param mat an rcorr object or a double matrix
-#' @param corrtype is either pearson or spearman. Will be passed into Hmsic::rcorr if mat is not already an rcorr object
-#' @return `mat` with stars appended for each level of significants (p < 0.05, p < 0.01, p < 0.001)
+#' @param corrtype is either pearson or spearman. Will be passed into 
+#' Hmsic::rcorr if mat is not already an rcorr object
+#' @return `mat` with stars appended for each level of significants 
+#' (p < 0.05, p < 0.01, p < 0.001)
 apaCorr <- function(mat, corrtype = "pearson") {
   matCorr <- mat
   if (class(matCorr) != "rcorr") {
@@ -886,7 +909,8 @@ apaCorr <- function(mat, corrtype = "pearson") {
   n <- length(stars[1,])
   colnames(stars) <- 1:n
   # Remove _ and convert to title case
-  row.names(stars) <- tools::toTitleCase(sapply(row.names(stars), gsub, pattern="_", replacement = " "))
+  row.names(stars) <- tools::toTitleCase(sapply(row.names(stars), gsub, 
+                                                pattern="_", replacement = " "))
   # Add index number to row names
   row.names(stars) <- paste(paste0(1:n,"."), row.names(stars))
   stars
@@ -1032,7 +1056,8 @@ ja_df6 <- ja_df6 %>%
   mutate(GMC_POST_CONF = scale(POST_CONFIDENCEn, center = TRUE, scale = FALSE))
 
 ja_df6 <- ja_df6 %>% 
-  mutate(GMC_PERCEIVED_ACC = scale(PERCEIVED_ADVICE_ACCURACYn, center = TRUE, scale = FALSE))
+  mutate(GMC_PERCEIVED_ACC = scale(PERCEIVED_ADVICE_ACCURACYn, center = TRUE, 
+                                   scale = FALSE))
 
 # Pivot longer by WOA and Jar
 
@@ -1059,54 +1084,74 @@ ja_df6 <- ja_df6 %>%
 
 # Baseline LMM will have age, DSS, Emo reg type, fluid IQ, pre-conf, and perceived advice accuracy.
 
-model8 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model8 <- lmer(WOA~GMC_AGE + GMC_DASS + EMO_REG_TYPE + GMC_FLUIDIQ + 
+                 GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
-model9 <- lmer(WOA~GMC_AGE*GMC_DASS + EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model9 <- lmer(WOA~GMC_AGE*GMC_DASS + EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + 
+                 GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model8, model9) # Retain model 8
 
-model10 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model10 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + 
+                  GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model8, model10) # Retain model 10
 
-model11 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE*GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model11 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE*GMC_FLUIDIQ + GMC_PRE_CONF + 
+                  GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model11) # Retain model 10
 
-model12 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF*GMC_DASS + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model12 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF*GMC_DASS + 
+                  GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model12) # Retain model 10
 
-model13 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model13 <- lmer(WOA~GMC_AGE*GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + 
+                  GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model13) # Retain model 10
 
-model14 <- lmer(WOA~GMC_AGE +GMC_DASS*EMO_REG_TYPE*GMC_PERCEIVED_ACC + GMC_FLUIDIQ + GMC_PRE_CONF +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model14 <- lmer(WOA~GMC_AGE +GMC_DASS*EMO_REG_TYPE*GMC_PERCEIVED_ACC + GMC_FLUIDIQ + 
+                  GMC_PRE_CONF +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model14) # Retain model 10
 
 
-model15 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF*GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model15 <- lmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + 
+                  GMC_PRE_CONF*GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model15)# Retain model 10
 
 
 
-model16 <- lmer(WOA~GMC_AGE*GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model16 <- lmer(WOA~GMC_AGE*GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + 
+                  GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model16) # Retain model 10
 
-model17 <- lmer(WOA~GMC_AGE*GMC_FLUIDIQ + GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PERCEIVED_ACC +
-                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model17 <- lmer(WOA~GMC_AGE*GMC_FLUIDIQ + GMC_PRE_CONF + GMC_DASS*EMO_REG_TYPE + 
+                  GMC_FLUIDIQ + GMC_PERCEIVED_ACC +
+                  (1|ID), data = ja_df6,  control=lmerControl(optimizer="bobyqa", 
+                                                              optCtrl=list(maxfun=2e5)))
 
 anova(model10, model17) # Retain model 10
 
@@ -1139,8 +1184,10 @@ plot(model10_diagnostics2, ask = FALSE, ncol = 2, nrow = 3)
 
 #### Robust LMM
 ```{r}
-model10_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + GMC_PRE_CONF + GMC_PERCEIVED_ACC +
-                          (1|ID), data = ja_df6, control=lmerControl(optimizer="bobyqa", optCtrl=list(maxfun=2e5)))
+model10_robust <- rlmer(WOA~GMC_AGE + GMC_DASS*EMO_REG_TYPE + GMC_FLUIDIQ + 
+                          GMC_PRE_CONF + GMC_PERCEIVED_ACC +
+                          (1|ID), data = ja_df6, control=lmerControl(optimizer="bobyqa", 
+                                                                     optCtrl=list(maxfun=2e5)))
 
 summary(model10_robust)
 
@@ -1218,7 +1265,8 @@ plot_model10_int <- plot_model(model10_robust,
                                type = "pred", 
                                 terms = c("GMC_DASS", "EMO_REG_TYPE"), 
                                 title = " ", 
-                                axis.title = c("Depressive Symptom Score (grand-mean centered)", "Weight of Advice"), 
+                                axis.title = c("Depressive Symptom Score (grand-mean centered)", 
+                                               "Weight of Advice"), 
                                 legend.title = "Emotion Regulation Method", 
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
@@ -1229,18 +1277,6 @@ plot_model10_int
 ### Main effects visualisations
 ```{r}
 
-
-# pre_conf_plot <- ggplot() +
-#  geom_point(data=ja_df4, aes(GMC_PRE_CONF, WOA)) + 
-#  geom_point(data=model29_robust, aes(x=GMC_PRE_CONF, y=fit), color="blue") +
-#  geom_line(data=model29_robust, aes(x=GMC_PRE_CONF, y=fit), color="blue") +
-#  geom_ribbon(data= model29_robust, aes(x=GMC_PRE_CONF, ymin=lower, ymax=upper), alpha= 0.3, fill="blue") +
-#  labs(x="Pre-Advice Confidence", y="WOA")
-
-# pre_conf_plot
-
-## The above plot does not work with an rlmer model (a robust model)
-
 apatheme=theme_bw()+
   theme(panel.grid.major=element_blank(),
         panel.grid.minor=element_blank(),
@@ -1250,10 +1286,11 @@ apatheme=theme_bw()+
 # Pre-confidence plot
 pre_conf_plot <- plot_model(model10_robust, 
                             colors = "gs",
-                            type = "pred", #can use the same model type as before from sjplot
+                            type = "pred", 
                                 terms = "GMC_PRE_CONF", 
                                 title = " ", 
-                                axis.title = c("Pre-Advice Confidence (grand-mean centered)", "Weight of Advice"), 
+                                axis.title = c("Pre-Advice Confidence (grand-mean centered)", 
+                                               "Weight of Advice"), 
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
 pre_conf_plot 
@@ -1262,10 +1299,11 @@ pre_conf_plot
 
 per_advice_acc_plot <- plot_model(model10_robust, 
                                   colors = "gs",
-                                  type = "pred", #can use the same model type as before from sjplot
+                                  type = "pred", 
                                 terms = "GMC_PERCEIVED_ACC", 
                                 title = " ", 
-                                axis.title = c("Perceived Advice Accuracy (grand-mean centered)", "Weight of Advice"), 
+                                axis.title = c("Perceived Advice Accuracy (grand-mean centered)", 
+                                               "Weight of Advice"), 
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
 per_advice_acc_plot
