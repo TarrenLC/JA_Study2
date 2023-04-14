@@ -782,11 +782,11 @@ ja_df3 <- ja_df3 %>% mutate(GMC_EMO_REG_EFFORT = (EMO_REG_EFFORT -
 
 # Split by emo regulation types
 
-chi_change <- ja_df4 %>% filter(EMO_CHNG_EFFORT >= 1)
+chi_change <- ja_df3 %>% filter(EMO_CHNG_EFFORT >= 1)
 
-chi_accept <- ja_df4 %>% filter(EMO_ACPT_EFFORT >= 1)
+chi_accept <- ja_df3 %>% filter(EMO_ACPT_EFFORT >= 1)
 
-chi_none <- ja_df4 %>% filter(EMO_REGULATOR == "NO")
+chi_none <- ja_df3 %>% filter(EMO_REGULATOR == "NO")
 
 # Change
 chi_change <- chi_change %>% 
@@ -833,7 +833,7 @@ prop.table(table(chi_none$AGEGROUP))
 ### Prepare data for correlations
 ```{r}
 # Pivot back wider
-ja_df5 <- spread(ja_df4, JAR, WOA)
+ja_df5 <- spread(ja_df3, JAR, WOA)
 
 # Create Grand Mean Centered emo effort scores
 
@@ -1282,6 +1282,8 @@ plot_model10_int <- plot_model(model10_robust,
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
 plot_model10_int
+
+ggsave("plot_model10_int.png")
 ```
 
 
@@ -1306,6 +1308,8 @@ pre_conf_plot <- plot_model(model10_robust,
                                 ci.lvl = 0.95) + apatheme
 pre_conf_plot 
 
+ggsave("pre_conf_plot.png")
+
 # Perceived advice accuracy plot
 
 per_advice_acc_plot <- plot_model(model10_robust, 
@@ -1318,6 +1322,8 @@ per_advice_acc_plot <- plot_model(model10_robust,
                                 show.data = TRUE, dot.size = 0.8, jitter = 0.2, 
                                 ci.lvl = 0.95) + apatheme
 per_advice_acc_plot
+
+ggsave("per_advice_acc_plot.png")
 
 ```
 
