@@ -778,6 +778,41 @@ ja_df3 <- ja_df3 %>% mutate(GMC_EMO_REG_EFFORT = (EMO_REG_EFFORT -
                                                     emo_effort_m$mean)) 
 
 
+ja_df4 <- ja_df3 %>% 
+  group_by(ID)
+
+ggplot(ja_df4) +
+  aes(x = AGEGROUP, fill = EMO_REG_TYPE) +
+  geom_bar(position = "dodge")
+
+
+chitest <- chisq.test(table(ja_df4$AGEGROUP, ja_df4$EMO_REG_TYPE))
+chitest
+
+chitest$expected
+
+ja_df4 %>% 
+  count(ID)
+
+
+## Create APA bar graph
+
+emo_type_graph <- ja_df4 %>%
+  ggplot(aes(x= AGEGROUP, fill = EMO_REG_TYPE)) +
+    geom_bar(position = "dodge") +
+  scale_x_discrete(name = "Age Group", labels = c('Young','Middle-aged',
+                                                  'Older')) +
+  scale_y_discrete(name = "Count") +
+  scale_fill_brewer(palette = "Greys", name = "Emotion Regulation Method", 
+                    breaks = c("NONE", "ACCEPT", "CHANGE"),
+                    labels=c("None", "Acceptance", "Change")) +
+  theme_apa(base_size = 14)
+
+
+emo_type_graph 
+
+ja_df4 <- ja_df4 %>% ungroup()
+
 # Chi Square analysis of age groups by each emotion regulation category
 
 # Split by emo regulation types
@@ -795,34 +830,12 @@ chi_change <- chi_change %>%
 chi_change_test <- chisq.test(table(chi_change$AGEGROUP))
 chi_change_test
 
-#calculating frequencies using pro.table
-
-prop.table(table(chi_change$AGEGROUP))
-
-
 # Accept
 chi_accept <- chi_accept %>% 
   group_by(ID)
 
 chi_accept_test <- chisq.test(table(chi_accept$AGEGROUP))
 chi_accept_test
-
-#calculating frequencies using pro.table
-
-prop.table(table(chi_accept$AGEGROUP))
-
-# None
-
-chi_none <- chi_none %>% 
-  group_by(ID)
-
-chi_none_test <- chisq.test(table(chi_none$AGEGROUP))
-chi_none_test
-
-#calculating frequencies using pro.table
-
-prop.table(table(chi_none$AGEGROUP))
-
 
 ```
 
